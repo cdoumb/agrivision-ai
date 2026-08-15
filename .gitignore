@@ -1,0 +1,25 @@
+# Données et modèles — jamais sur GitHub (trop lourds, se retéléchargent/régénèrent)
+data/
+models/
+*.h5
+*.keras
+*.tflite
+*.pt
+
+# Environnements Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Colab / Drive
+*.ipynb_checkpoints
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+kaggle.json

@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "frozen_date": "2026-08-14",
+  "classes": [
+    { "index": 0, "culture": "Tomate",       "etat": "Saine" },
+    { "index": 1, "culture": "Tomate",       "etat": "Mildiou tardif" },
+    { "index": 2, "culture": "Tomate",       "etat": "Tache bactérienne" },
+    { "index": 3, "culture": "Tomate",       "etat": "Septoriose" },
+    { "index": 4, "culture": "Maïs",         "etat": "Sain" },
+    { "index": 5, "culture": "Maïs",         "etat": "Rouille commune" },
+    { "index": 6, "culture": "Maïs",         "etat": "Helminthosporiose" },
+    { "index": 7, "culture": "Maïs",         "etat": "Cercosporiose" },
+    { "index": 8, "culture": "Poivron",      "etat": "Sain" },
+    { "index": 9, "culture": "Poivron",      "etat": "Tache bactérienne" }
+  ]
+}
