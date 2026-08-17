@@ -1,6 +1,9 @@
 # Données et modèles — jamais sur GitHub (trop lourds, se retéléchargent/régénèrent)
-data/
-models/
+# Barre oblique initiale obligatoire : sans elle, "data/" exclut TOUT dossier
+# nommé "data" à n'importe quelle profondeur (donc src/data/ aussi, ce qui
+# a fait disparaître silencieusement notre code source — merci Faustin).
+/data/
+/models/
 *.h5
 *.keras
 *.tflite

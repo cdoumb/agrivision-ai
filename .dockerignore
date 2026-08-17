@@ -1,5 +1,7 @@
-data/
-models/
+# Barre oblique initiale : ne cible que le dossier à la racine, pas tout
+# dossier de ce nom ailleurs dans l'arborescence (cf. .gitignore).
+/data/
+/models/
 .git/
 notebooks/
 reports/
