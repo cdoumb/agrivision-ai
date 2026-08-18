@@ -137,7 +137,8 @@ def test_reponse_conforme_au_contrat():
     attendus = {"predicted_class", "class_index", "confidence",
                 "top3", "gradcam_base64", "model_version"}
     assert set(resultat) == attendus
-    assert resultat["model_version"] == "mobilenetv2-v1.0"
+    assert resultat["model_version"] == inference.VERSION_MODELE
+    assert resultat["model_version"].startswith("mobilenetv2-v")
 
 
 @modele_requis

@@ -13,22 +13,50 @@ emporté la décision, et propose une conduite à tenir.
 ## Résultats du modèle
 
 MobileNetV2 pré-entraîné sur ImageNet, transfert d'apprentissage puis fine-tuning.
+Version en service : `mobilenetv2-v2.0`, entraînée sur PlantVillage (studio) et
+PlantWild (terrain).
 
-| | |
-|---|---|
-| Exactitude sur le jeu de test | **96,64 %** (2 056 images jamais vues) |
-| F1 macro | **0,9566** |
-| Découpage train / val / test | 9 597 / 2 058 / 2 056 |
-| Version du modèle | `mobilenetv2-v1.0` |
+| | studio (PlantVillage) | terrain (PlantDoc) |
+|---|---|---|
+| Exactitude | 94,36 % | 48,99 % |
+| F1 macro | 0,9373 | 0,4520 |
 
-Les deux classes les plus difficiles sont la cercosporiose du maïs (F1 0,825) et
-l'helminthosporiose du maïs (F1 0,899). Elles se confondent l'une avec l'autre :
-les deux maladies produisent des lésions allongées gris-brun que l'œil humain
-distingue mal sur photo. Toutes les autres classes dépassent 0,95.
+Le jeu de terrain, 942 photographies prises au champ, n'a jamais servi à
+l'entraînement d'aucune version. C'est le seul juge honnête de ce que vaut le
+modèle en conditions réelles.
 
-L'application traite ce cas explicitement. Quand l'écart entre les deux premières
-hypothèses est trop faible pour trancher, elle le signale et présente les deux
-fiches côte à côte plutôt que d'imposer une réponse.
+L'écart entre les deux colonnes est le résultat le plus important du projet.
+PlantVillage est photographié en studio, feuille détachée sur fond uni : un
+modèle qui n'a vu que cela apprend autant les conditions de prise de vue que la
+maladie. Le chapitre « robustesse » du rapport détaille la mesure.
+
+### Ce qu'a apporté la version 2
+
+La première version, entraînée sur le seul PlantVillage, atteignait 96,64 % en
+studio mais 36,27 % au champ, et surtout restait aussi confiante quand elle se
+trompait que lorsqu'elle avait raison.
+
+Sur les 942 photographies de terrain, en comptant ce que voit réellement
+l'utilisateur :
+
+| | v1 | v2 |
+|---|---|---|
+| Diagnostics affirmés sans avertissement | 672 | 220 |
+| — dont corrects | 269 | 159 |
+| **Fiabilité quand l'application affirme** | **40,0 %** | **72,3 %** |
+| **Diagnostics faux affirmés sans avertissement** | **403** | **61** |
+
+La v2 se prononce moins souvent, mais elle a raison bien plus souvent quand elle
+le fait, et le nombre de diagnostics faux annoncés avec assurance est divisé par
+près de sept. Pour un outil d'aide à la décision agricole, un modèle qui sait
+douter vaut mieux qu'un modèle qui a un peu plus souvent raison.
+
+Le seuil d'avertissement de l'application a été réglé en conséquence, à 60 %
+au lieu de 70 % : la v2 produit des probabilités plus basses, ayant été entraînée
+avec un lissage des étiquettes.
+
+Les deux modèles sont conservés. `notebooks/02_amelioration_robustesse.ipynb`
+produit la v2 et compare les deux sur les mêmes jeux.
 
 ## Démarrage rapide
 
@@ -48,8 +76,9 @@ charger le modèle.
 
 ## Récupérer les données et le modèle
 
-**Modèle entraîné** — `mobilenetv2_v1.keras`, 23 Mo, non versionné (Git n'est pas
-fait pour les fichiers binaires lourds) :
+**Modèle entraîné** — `mobilenetv2_v2.keras`, 26 Mo, non versionné (Git n'est pas
+fait pour les fichiers binaires lourds). La v1 est conservée à côté, pour la
+comparaison du rapport :
 
 > https://drive.google.com/drive/folders/19gji6dIzjMUoqy0ImYFwKCNAHGvcAER7?usp=sharing
 
@@ -131,14 +160,23 @@ Le notebook est produit par `notebooks/build_notebook.py`, le format `.ipynb`
 
 ## Limites connues
 
-Le corpus PlantVillage est constitué de photos prises en studio, feuille détachée
-sur fond uni. Les performances annoncées valent dans ces conditions et ne
-préjugent pas du comportement sur des photos prises au champ, avec un feuillage
-dense, des ombres portées et un éclairage variable.
+**Au champ, le modèle se trompe une fois sur deux.** C'est mesuré, pas supposé :
+48,99 % d'exactitude sur 942 photographies de terrain, contre 94,36 % en studio.
+L'application est conçue autour de cette limite, en signalant explicitement les
+diagnostics incertains plutôt qu'en affichant un chiffre rassurant.
 
-Les cartes Grad-CAM produites se posent bien sur les lésions et non sur le fond,
-ce qui écarte l'hypothèse d'un modèle ayant appris le décor plutôt que la maladie.
-Cette vérification reste néanmoins interne au corpus.
+L'entraînement repose majoritairement sur PlantVillage, photographié en studio,
+feuille détachée sur fond uni. PlantWild apporte des images de terrain, mais en
+bien moindre quantité. Un modèle entraîné dans ces conditions apprend en partie
+la prise de vue et non la seule maladie.
+
+Les cartes Grad-CAM se posent sur les lésions et non sur le fond, ce qui écarte
+l'hypothèse d'un modèle ayant appris le décor. Cette vérification reste toutefois
+faite sur les corpus disponibles.
+
+Le jeu de test de terrain provient d'une source unique, PlantDoc. D'autres
+conditions de prise de vue donneraient d'autres chiffres. La classe
+« Maïs - Sain » y est absente et n'a donc pas pu être évaluée au champ.
 
 Toute image n'appartenant pas aux 10 classes est rapprochée de force de l'une
 d'entre elles : le modèle répartit toujours 100 % de certitude entre les classes

@@ -38,7 +38,12 @@ def _tensorflow():
 
 
 RACINE_MODULE = Path(__file__).resolve().parent
-NOM_FICHIER_MODELE = "mobilenetv2_v1.keras"
+
+# Le v2 est entraîné sur PlantVillage et PlantWild, alors que le v1 ne
+# connaissait que le studio. Sur 942 photographies de terrain, le nombre de
+# diagnostics faux annoncés sans le moindre avertissement passe de 403 à 61.
+# Le v1 reste chargeable en pointant AGRIVISION_MODELE dessus.
+NOM_FICHIER_MODELE = "mobilenetv2_v2.keras"
 
 
 def _emplacements_candidats():
@@ -82,7 +87,7 @@ def _trouver_modele():
 CHEMIN_MODELE = _trouver_modele() or (RACINE_MODULE / NOM_FICHIER_MODELE)
 
 TAILLE_ENTREE = 224
-VERSION_MODELE = "mobilenetv2-v1.0"
+VERSION_MODELE = "mobilenetv2-v2.0"
 
 # Chargement protégé par un verrou : sans lui, deux requêtes simultanées
 # arrivant sur un service fraîchement démarré chargeraient le modèle deux fois.

@@ -25,7 +25,18 @@ RACINE = Path(__file__).resolve().parent
 DELAI_DIAGNOSTIC = 60  # secondes ; le premier appel peut réveiller le service
 
 # En dessous de ce seuil, le diagnostic est présenté comme incertain.
-SEUIL_CONFIANCE_FAIBLE = 0.70
+#
+# La valeur n'est pas choisie au hasard : elle a été réglée en mesurant, sur
+# 942 photographies de terrain, ce que l'utilisateur voit vraiment. Avec le
+# modèle v1 et un seuil à 0,70, l'application affirmait 672 diagnostics dont
+# 403 faux, soit une fiabilité de 40 % quand elle se prononçait. Avec le v2 à
+# 0,60, elle se prononce moins souvent mais a raison dans 72 % des cas, et le
+# nombre de diagnostics faux annoncés sans avertissement tombe à 61.
+#
+# Le v2 produit des probabilités plus basses que le v1, parce qu'il a été
+# entraîné avec un lissage des étiquettes : conserver 0,70 l'aurait rendu
+# muet dans 85 % des cas.
+SEUIL_CONFIANCE_FAIBLE = 0.60
 # Écart minimal entre les deux premières hypothèses pour trancher franchement.
 ECART_MINIMAL = 0.20
 
@@ -142,6 +153,20 @@ def afficher_barre_laterale():
         st.caption("Toute autre culture ou maladie sera rapprochée de force de l'une "
                    "de ces classes. Le diagnostic n'a alors aucun sens.")
 
+        st.divider()
+        st.subheader("Fiabilité mesurée")
+        st.caption(
+            "Le modèle a été entraîné sur des photographies de studio, complétées "
+            "par des images de terrain. Sa fiabilité dépend fortement des conditions "
+            "de prise de vue.\n\n"
+            "Sur un corpus de 942 photographies prises au champ, il identifie "
+            "correctement la maladie dans environ un cas sur deux. C'est pourquoi "
+            "l'application signale explicitement les diagnostics dont elle n'est pas "
+            "sûre : **un avertissement doit être pris au sérieux, pas contourné**.\n\n"
+            "Une photo nette, cadrée sur une seule feuille à plat et sur fond uni "
+            "améliore nettement le résultat."
+        )
+
 
 def afficher_verdict(resultat, recommandation):
     """Diagnostic principal, avec le niveau de certitude rendu explicite."""
@@ -216,11 +241,15 @@ def afficher_images(fichier, resultat):
             st.info("Carte non disponible pour ce diagnostic.")
 
     st.caption(
-        "Les zones **rouges** sont celles qui ont le plus pesé dans la décision, "
-        "les **bleues** n'ont pratiquement pas compté. Cette carte sert à vérifier "
-        "le raisonnement : si le rouge se pose sur les lésions, le diagnostic "
-        "s'appuie sur les bons indices. S'il se concentre sur le fond, sur une ombre "
-        "ou sur un doigt, il faut se méfier du résultat et reprendre la photo."
+        "**Toute la feuille est examinée**, sans exception. Les couleurs indiquent "
+        "seulement ce qui a le plus pesé dans la décision : les zones **rouges** ont "
+        "emporté le diagnostic, les **bleues** n'ont pratiquement pas compté. Une "
+        "lésion située ailleurs n'est donc pas ignorée, elle deviendrait simplement "
+        "la zone rouge à son tour.\n\n"
+        "Cette carte sert à vérifier le raisonnement : si le rouge se pose sur les "
+        "lésions, le diagnostic s'appuie sur les bons indices. S'il se concentre sur "
+        "le fond, sur une ombre ou sur un doigt, il faut se méfier du résultat et "
+        "reprendre la photo."
     )
 
 
