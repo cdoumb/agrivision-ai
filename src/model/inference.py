@@ -120,19 +120,32 @@ def _decouper_modele(modele):
     """
     Sépare le réseau en deux morceaux, nécessaires au Grad-CAM.
 
-    Le modèle entraîné a cette forme :
+    Le réseau entraîné a cette forme :
 
-        entrée -> augmentation -> preprocess_input -> MobileNetV2 -> GAP -> dropout -> dense
+        entrée -> augmentation -> preprocess_input -> MobileNetV2 -> tête -> 10 sorties
 
-    MobileNetV2 y est un sous-modèle imbriqué. La couche de convolution finale
-    (`out_relu`) n'est donc pas accessible directement depuis le modèle
-    principal, et c'est exactement ce dont le Grad-CAM a besoin. Comme
-    MobileNetV2 est instancié sans sa tête de classification, sa sortie EST
-    la sortie de `out_relu`, ce qui évite d'aller la chercher à l'intérieur.
+    MobileNetV2 y est un sous-modèle imbriqué, donc `get_layer("out_relu")`
+    échoue depuis le modèle principal : la couche n'est pas au premier niveau.
+    Comme MobileNetV2 est instancié sans sa tête de classification, sa sortie
+    EST celle de `out_relu`, ce qui évite d'aller la chercher à l'intérieur.
 
     Renvoie (extracteur, tête) :
-      - extracteur : image prétraitée -> cartes de caractéristiques (7, 7, 1280)
+      - extracteur : image **déjà normalisée** -> cartes (7, 7, 1280)
       - tête       : cartes de caractéristiques -> 10 probabilités
+
+    Deux pièges, tous deux rencontrés en vrai :
+
+    L'extracteur est le sous-modèle MobileNetV2 brut, et la normalisation doit
+    donc être appliquée avant de l'appeler. On pourrait croire qu'il suffit de
+    rejouer les couches situées avant lui, mais Keras 3 ne fait pas figurer
+    `preprocess_input` dans `layers` : c'est une opération, pas un objet Layer.
+    La rejouer ainsi sauterait la normalisation en silence, et le réseau
+    recevrait des valeurs de 0 à 255 au lieu de -1 à 1.
+
+    La tête, elle, est reconstruite en suivant les connexions réelles du
+    graphe et non en enchaînant les couches l'une après l'autre. Le modèle v2
+    place un pooling moyen et un pooling maximum en parallèle avant de les
+    concaténer, ce qu'un simple enchaînement ne sait pas reproduire.
     """
     tf = _tensorflow()
 
@@ -144,20 +157,34 @@ def _decouper_modele(modele):
     if indice_base is None:
         raise RuntimeError(
             "Sous-modèle MobileNetV2 introuvable dans le réseau chargé. "
-            "Le modèle a-t-il été entraîné par notebooks/01_entrainement_mobilenetv2.ipynb ?"
+            "Le modèle vient-il bien des notebooks du projet ?"
         )
 
     extracteur = modele.layers[indice_base]
+    base = extracteur
 
-    # On reconstruit la tête en réappliquant, dans l'ordre, les couches qui
-    # suivent MobileNetV2. Elles gardent leurs poids entraînés : ce sont les
-    # mêmes objets, pas des copies.
-    entree_caracteristiques = tf.keras.Input(shape=extracteur.output.shape[1:])
-    x = entree_caracteristiques
-    for couche in modele.layers[indice_base + 1:]:
-        x = couche(x)
-    tete = tf.keras.Model(entree_caracteristiques, x, name="tete_classification")
+    # La tête, elle, peut se ramifier. On note quelle couche produit quel
+    # tenseur, puis on rebranche chacune sur ses véritables entrées. Un tenseur
+    # qu'aucune couche de la tête ne produit vient forcément de la base.
+    couches_tete = modele.layers[indice_base + 1:]
+    producteur = {}
+    for couche in couches_tete:
+        for tenseur in tf.nest.flatten(couche.output):
+            producteur[id(tenseur)] = couche.name
 
+    entree_tete = tf.keras.Input(shape=base.output.shape[1:], name="caracteristiques")
+    reconstruits = {}
+    sortie = entree_tete
+
+    for couche in couches_tete:
+        entrees = []
+        for tenseur in tf.nest.flatten(couche.input):
+            nom = producteur.get(id(tenseur))
+            entrees.append(reconstruits[nom] if nom else entree_tete)
+        sortie = couche(entrees[0] if len(entrees) == 1 else entrees)
+        reconstruits[couche.name] = sortie
+
+    tete = tf.keras.Model(entree_tete, sortie, name="tete_classification")
     return extracteur, tete
 
 
@@ -265,6 +292,8 @@ def calculer_gradcam(tableau: np.ndarray, indice_classe: int) -> np.ndarray:
     tf = _tensorflow()
     etat = charger()
 
+    # L'extracteur est le MobileNetV2 brut : la normalisation doit être
+    # appliquée ici, elle ne fait pas partie du sous-modèle.
     entree = tf.keras.applications.mobilenet_v2.preprocess_input(tf.identity(tableau))
 
     with tf.GradientTape() as bande:

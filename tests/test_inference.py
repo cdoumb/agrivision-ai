@@ -213,6 +213,59 @@ def test_recherche_de_repli_sans_surcharge(monkeypatch):
 
 
 @modele_requis
+def test_decoupage_reproduit_exactement_le_modele():
+    """
+    Le Grad-CAM impose de scinder le réseau en extracteur et tête. Ce test
+    vérifie que la reconstruction donne les mêmes probabilités que le modèle
+    d'origine.
+
+    Une régression a déjà eu lieu ici : rejouer les couches listées par
+    `modele.layers` sautait la normalisation, que Keras 3 ne compte pas parmi
+    les couches. Les prédictions restaient plausibles mais fausses, sans
+    qu'aucune erreur ne soit levée.
+    """
+    import tensorflow as tf
+
+    etat = inference.charger()
+    tableau, _ = inference.preparer_image(feuille_jpeg())
+
+    attendu = etat["modele"](tf.convert_to_tensor(tableau), training=False).numpy()
+    entree = tf.keras.applications.mobilenet_v2.preprocess_input(tf.identity(tableau))
+    obtenu = etat["tete"](etat["base"](entree, training=False), training=False).numpy()
+
+    assert np.abs(attendu - obtenu).max() < 1e-4
+
+
+def test_tete_ramifiee_supportee():
+    """
+    Le modèle v2 met un pooling moyen et un pooling maximum en parallèle avant
+    de les concaténer. Une reconstruction qui enchaînerait les couches l'une
+    après l'autre échouerait sur cette architecture.
+    """
+    import tensorflow as tf
+
+    base = tf.keras.applications.MobileNetV2(
+        input_shape=(224, 224, 3), include_top=False, weights=None)
+    entree = tf.keras.Input(shape=(224, 224, 3))
+    x = tf.keras.applications.mobilenet_v2.preprocess_input(entree)
+    x = base(x, training=False)
+    x = tf.keras.layers.Concatenate()([
+        tf.keras.layers.GlobalAveragePooling2D()(x),
+        tf.keras.layers.GlobalMaxPooling2D()(x),
+    ])
+    sortie = tf.keras.layers.Dense(10, activation="softmax")(x)
+    modele = tf.keras.Model(entree, sortie)
+
+    extracteur, tete = inference._decouper_modele(modele)
+
+    echantillon = tf.zeros((1, 224, 224, 3))
+    entree_normalisee = tf.keras.applications.mobilenet_v2.preprocess_input(echantillon)
+    probabilites = tete(extracteur(entree_normalisee, training=False), training=False)
+    assert probabilites.shape == (1, 10)
+    assert abs(float(tf.reduce_sum(probabilites)) - 1.0) < 1e-4
+
+
+@modele_requis
 def test_modele_charge_une_seule_fois():
     inference.diagnostiquer(feuille_jpeg(), avec_gradcam=False)
     assert inference.est_charge()
