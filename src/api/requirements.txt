@@ -1,6 +1,12 @@
-fastapi==0.115.0
-uvicorn[standard]==0.30.6
-python-multipart==0.0.9
-pillow==10.4.0
-tensorflow-cpu==2.17.0
-numpy==1.26.4
+# Versions relevées le 17/08/2026, testées ensemble (28 tests au vert)
+# et alignées sur l'environnement d'entraînement.
+fastapi==0.141.1
+uvicorn[standard]==0.52.3
+python-multipart==0.0.32
+pillow==12.3.0
+
+# Aligné sur la version qui a servi à l'entraînement (Colab, 17/08/2026).
+# Un .keras écrit par Keras 3.15 ne se relit pas de façon fiable par le
+# Keras 3.4 qu'embarquait TensorFlow 2.17.
+tensorflow-cpu==2.21.0
+numpy==2.3.1

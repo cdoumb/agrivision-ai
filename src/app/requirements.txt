@@ -1,2 +1,6 @@
-streamlit==1.38.0
-requests==2.32.3
+# Streamlit 1.38 épinglait protobuf < 6, incompatible avec le protobuf >= 6.31
+# exigé par TensorFlow 2.21. Sans conséquence en Docker, les deux services étant
+# dans des conteneurs séparés, mais bloquant dès qu'on installe tout dans un
+# même environnement local pour développer.
+streamlit==1.61.1
+requests==2.32.4

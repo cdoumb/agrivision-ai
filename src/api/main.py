@@ -1,20 +1,31 @@
 """
-Service d'inférence AgriVision-AI (Binôme A).
+Service d'inférence AgriVision-AI.
 
-/health et /classes sont opérationnels. /predict valide réellement
-l'image reçue (pas seulement l'en-tête Content-Type, qui peut être faux)
-et renvoie une réponse factice tant que le modèle (Binôme B) n'est pas
-livré — au format défini dans contrat_interface.md, pour que
-l'application puisse déjà se développer contre ce mock.
+Squelette et validation : Binôme A.
+Branchement du modèle réel : Binôme B, le 17 août 2026.
+
+/predict valide réellement l'image reçue (pas seulement l'en-tête
+Content-Type, qui peut être faux) puis délègue le diagnostic au module
+src/model/inference.py. Tout ce qui touche au réseau de neurones vit
+là-bas : ce fichier ne s'occupe que du transport HTTP.
 """
 import io
 import json
+import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from PIL import Image, UnidentifiedImageError
 
 ROOT = Path(__file__).resolve().parent
+
+# Rend src/model/inference.py importable aussi bien en local (le module est
+# alors dans src/, un cran au-dessus) que dans le conteneur (où le Dockerfile
+# copie le code dans /app/model/, déjà sur le chemin d'import).
+sys.path.insert(0, str(ROOT.parent))
+
+from model import inference  # noqa: E402
 
 
 def _find_classes_json(start: Path) -> Path:
@@ -32,16 +43,36 @@ def _find_classes_json(start: Path) -> Path:
 
 
 CLASSES_PATH = _find_classes_json(ROOT)
-MODEL_VERSION = "mock-0.0"  # sera remplacé par la vraie version au jalon J14
+MODEL_VERSION = inference.VERSION_MODELE
 
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 Mo, cf. contrat d'interface
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png"}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Charge le modèle au démarrage plutôt qu'à la première requête, qui
+    attendrait sinon une dizaine de secondes.
+
+    Un modèle absent n'empêche pas le service de démarrer : /health le signale
+    et /predict répond 503. Sans ça, un conteneur mal configuré redémarrerait
+    en boucle sans qu'on sache pourquoi.
+    """
+    try:
+        inference.charger()
+        print(f"Modèle chargé : {inference.CHEMIN_MODELE}")
+    except FileNotFoundError as erreur:
+        print(f"AVERTISSEMENT — service démarré sans modèle.\n{erreur}")
+    yield
+
 
 app = FastAPI(
     title="AgriVision-AI — Service d'inférence",
     description="Diagnostic de maladies des cultures à partir d'une photo de feuille. "
                  "Voir contrat_interface.md à la racine du dépôt pour le détail du contrat.",
     version=MODEL_VERSION,
+    lifespan=lifespan,
 )
 
 
@@ -52,8 +83,18 @@ def load_classes():
 
 @app.get("/health", summary="État du service")
 def health():
-    """Vérifie que le service répond et indique la version du modèle chargé."""
-    return {"status": "ok", "model_version": MODEL_VERSION}
+    """
+    Vérifie que le service répond et indique la version du modèle chargé.
+
+    `model_loaded` distingue deux situations que le seul « status: ok »
+    confondait : le service répond mais ne sait pas encore diagnostiquer,
+    et le service est pleinement opérationnel.
+    """
+    return {
+        "status": "ok",
+        "model_version": MODEL_VERSION,
+        "model_loaded": inference.est_charge(),
+    }
 
 
 @app.get("/classes", summary="Liste ordonnée des classes")
@@ -95,18 +136,21 @@ async def predict(file: UploadFile = File(..., description="Image JPEG ou PNG, 5
     except Exception:
         raise HTTPException(status_code=400, detail="Erreur lors de la lecture de l'image.")
 
-    # TODO (après J14) : redimensionner en 224x224, normaliser, appeler le
-    # modèle réel (src/model/), générer la vraie carte Grad-CAM.
-    all_classes = load_classes()
-    top = all_classes[0]
-    return {
-        "predicted_class": f"{top['culture']} - {top['etat']}",
-        "class_index": top["index"],
-        "confidence": 0.42,
-        "top3": [
-            {"class_index": c["index"], "label": f"{c['culture']} - {c['etat']}", "score": 0.0}
-            for c in all_classes[:3]
-        ],
-        "gradcam_base64": None,
-        "model_version": MODEL_VERSION,
-    }
+    # 4. Diagnostic. Le redimensionnement en 224x224 et la normalisation ont
+    # lieu dans le module d'inférence, donc côté service comme l'impose la
+    # section 2 du contrat, jamais côté application.
+    try:
+        return inference.diagnostiquer(contents)
+    except FileNotFoundError:
+        # Modèle absent : on le dit franchement plutôt que de renvoyer un
+        # diagnostic factice qu'un client prendrait pour argent comptant.
+        raise HTTPException(
+            status_code=503,
+            detail="Service indisponible : le modèle n'est pas chargé. "
+                   "Voir les journaux du service au démarrage.",
+        )
+    except Exception as erreur:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erreur pendant le diagnostic : {type(erreur).__name__}",
+        )

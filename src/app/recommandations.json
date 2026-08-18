@@ -1,0 +1,135 @@
+{
+  "_note": "Contenu agronomique de l'application, séparé du code pour être relu et corrigé sans toucher à Python. La clé est l'indice de classe défini par classes.json, jamais le libellé : les libellés peuvent être reformulés, les indices sont figés par le contrat d'interface.",
+  "_avertissement": "Ces informations sont indicatives et destinées à orienter une observation de terrain. Elles ne remplacent pas le diagnostic d'un conseiller agricole ou d'un service de protection des végétaux, seuls habilités à préconiser un traitement.",
+  "recommandations": {
+    "0": {
+      "agent": null,
+      "gravite": "aucune",
+      "constat": "Aucun symptôme de maladie détecté sur cette feuille.",
+      "symptomes": "Limbe uniformément vert, nervures nettes, absence de taches, de nécroses et de décolorations.",
+      "conditions": null,
+      "mesures": [
+        "Poursuivre la surveillance hebdomadaire, en particulier après une période humide.",
+        "Contrôler aussi les feuilles basses, où les premiers symptômes apparaissent le plus souvent.",
+        "Une feuille saine ne garantit pas une parcelle saine : varier les points d'observation."
+      ]
+    },
+    "1": {
+      "agent": "Phytophthora infestans",
+      "gravite": "élevée",
+      "constat": "Mildiou tardif. Maladie à progression rapide, pouvant détruire une culture en quelques jours par temps humide.",
+      "symptomes": "Larges plages brunes à noirâtres, d'aspect huileux, souvent bordées d'un liseré pâle. Feutrage blanchâtre au revers du limbe par forte humidité.",
+      "conditions": "Températures modérées (15 à 22 °C) associées à une humidité élevée, brouillards, rosées persistantes, irrigation par aspersion en fin de journée.",
+      "mesures": [
+        "Intervenir sans attendre : la progression est très rapide.",
+        "Retirer et détruire les organes atteints hors de la parcelle, ne pas les composter.",
+        "Éviter d'arroser le feuillage et privilégier l'arrosage au pied, le matin.",
+        "Améliorer l'aération entre les plants pour réduire l'humidité stagnante.",
+        "Consulter un conseiller agricole rapidement : ce stade justifie souvent une protection."
+      ]
+    },
+    "2": {
+      "agent": "Xanthomonas spp.",
+      "gravite": "modérée à élevée",
+      "constat": "Tache bactérienne de la tomate. Se propage par éclaboussures et par le matériel de travail.",
+      "symptomes": "Petites taches anguleuses brun foncé, souvent cernées d'un halo jaune, parfois translucides à contre-jour. Peut aussi atteindre les fruits.",
+      "conditions": "Temps chaud et humide, pluies battantes, irrigation par aspersion, travail dans la parcelle quand le feuillage est mouillé.",
+      "mesures": [
+        "Ne pas intervenir dans la parcelle tant que le feuillage est humide, c'est le principal vecteur de propagation.",
+        "Désinfecter les outils de taille entre les plants.",
+        "Retirer les feuilles les plus atteintes et les évacuer hors de la parcelle.",
+        "Prévoir une rotation culturale : éviter de replanter des solanacées au même endroit la saison suivante.",
+        "Utiliser des semences saines ou certifiées pour le cycle suivant."
+      ]
+    },
+    "3": {
+      "agent": "Septoria lycopersici",
+      "gravite": "modérée",
+      "constat": "Septoriose. Progresse du bas vers le haut du plant et affaiblit la production par défoliation.",
+      "symptomes": "Nombreuses petites taches rondes à centre gris clair et bordure brune, portant de fins points noirs visibles de près. Débute sur les feuilles les plus basses.",
+      "conditions": "Humidité prolongée sur le feuillage, densité de plantation élevée, résidus de culture laissés au sol.",
+      "mesures": [
+        "Supprimer les feuilles basses atteintes dès les premiers symptômes.",
+        "Pailler le sol pour limiter les éclaboussures qui remontent les spores.",
+        "Espacer les plants et tuteurer pour favoriser le séchage du feuillage.",
+        "Éliminer les résidus de culture en fin de saison, ils conservent le champignon."
+      ]
+    },
+    "4": {
+      "agent": null,
+      "gravite": "aucune",
+      "constat": "Aucun symptôme de maladie détecté sur cette feuille.",
+      "symptomes": "Limbe vert homogène, nervures parallèles régulières, pas de lésion ni de pustule.",
+      "conditions": null,
+      "mesures": [
+        "Poursuivre la surveillance, en particulier autour de la floraison, période sensible.",
+        "Observer plusieurs plants répartis dans la parcelle plutôt qu'une seule zone."
+      ]
+    },
+    "5": {
+      "agent": "Puccinia sorghi",
+      "gravite": "modérée",
+      "constat": "Rouille commune du maïs. Rarement dévastatrice seule, mais affaiblit la plante et réduit le remplissage des grains.",
+      "symptomes": "Petites pustules ovales brun-rouille, saillantes au toucher, réparties sur les deux faces du limbe. Elles libèrent une poudre orangée au frottement.",
+      "conditions": "Températures fraîches à modérées avec forte humidité, rosées abondantes, cultures denses.",
+      "mesures": [
+        "Évaluer l'étendue de l'attaque sur l'ensemble de la parcelle avant toute décision.",
+        "Surveiller l'évolution : une rouille tardive après floraison a peu d'impact sur le rendement.",
+        "Privilégier des variétés tolérantes lors des semis suivants.",
+        "Éviter les excès d'azote, qui favorisent un feuillage sensible."
+      ]
+    },
+    "6": {
+      "agent": "Exserohilum turcicum",
+      "gravite": "élevée",
+      "constat": "Helminthosporiose, aussi appelée brûlure septentrionale. Une attaque avant floraison peut entraîner des pertes de rendement importantes.",
+      "symptomes": "Longues lésions elliptiques en forme de cigare, gris-vert puis brun clair, de plusieurs centimètres, orientées dans le sens des nervures.",
+      "conditions": "Temps doux et humide prolongé, rosées nocturnes, résidus de maïs laissés en surface, monoculture.",
+      "mesures": [
+        "Repérer le stade de la culture : une attaque avant floraison est bien plus pénalisante.",
+        "Enfouir ou exporter les résidus de la récolte précédente, principale source d'inoculum.",
+        "Instaurer une rotation avec une culture non hôte.",
+        "Choisir des variétés résistantes pour le cycle suivant.",
+        "Consulter un conseiller agricole si l'attaque est précoce et étendue."
+      ]
+    },
+    "7": {
+      "agent": "Cercospora zeae-maydis",
+      "gravite": "élevée",
+      "constat": "Cercosporiose, aussi appelée tache grise. Se confond facilement avec l'helminthosporiose, mais les lésions sont plus étroites et à bords droits.",
+      "symptomes": "Lésions rectangulaires allongées, gris clair à beige, aux bords nettement délimités par les nervures, ce qui leur donne un aspect en bandes parallèles.",
+      "conditions": "Forte humidité prolongée, températures élevées, semis direct sur résidus de maïs, monoculture.",
+      "mesures": [
+        "Confirmer par l'observation : bords droits et parallèles aux nervures pour la cercosporiose, forme de cigare aux extrémités effilées pour l'helminthosporiose.",
+        "Enfouir ou exporter les résidus de maïs, qui hébergent le champignon d'une saison à l'autre.",
+        "Rompre la monoculture par une rotation.",
+        "Retenir des variétés tolérantes lors des semis suivants."
+      ]
+    },
+    "8": {
+      "agent": null,
+      "gravite": "aucune",
+      "constat": "Aucun symptôme de maladie détecté sur cette feuille.",
+      "symptomes": "Limbe vert brillant et uniforme, sans tache ni déformation.",
+      "conditions": null,
+      "mesures": [
+        "Poursuivre la surveillance après chaque épisode pluvieux.",
+        "Vérifier également le revers des feuilles, où débutent certaines attaques."
+      ]
+    },
+    "9": {
+      "agent": "Xanthomonas spp.",
+      "gravite": "modérée à élevée",
+      "constat": "Tache bactérienne du poivron. Provoque des chutes de feuilles et expose les fruits aux coups de soleil.",
+      "symptomes": "Taches anguleuses d'aspect huileux, brun foncé, souvent entourées d'un halo jaune. Les zones atteintes se dessèchent et se déchirent.",
+      "conditions": "Chaleur et humidité, pluies battantes, irrigation par aspersion, manipulation du feuillage mouillé.",
+      "mesures": [
+        "Ne pas travailler dans la parcelle quand le feuillage est mouillé.",
+        "Arroser au pied plutôt que par aspersion.",
+        "Retirer et évacuer les feuilles fortement atteintes.",
+        "Prévoir une rotation d'au moins deux ans sans solanacées sur la parcelle.",
+        "Partir de semences saines ou certifiées au cycle suivant."
+      ]
+    }
+  }
+}
