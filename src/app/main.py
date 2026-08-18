@@ -207,11 +207,11 @@ def afficher_images(fichier, resultat):
 
     gauche, droite = st.columns(2)
     with gauche:
-        st.image(fichier, caption="Photo envoyée", use_container_width=True)
+        st.image(fichier, caption="Photo envoyée", width="stretch")
     with droite:
         if resultat.get("gradcam_base64"):
             image = base64.b64decode(resultat["gradcam_base64"])
-            st.image(image, caption="Zones décisives", use_container_width=True)
+            st.image(image, caption="Zones décisives", width="stretch")
         else:
             st.info("Carte non disponible pour ce diagnostic.")
 
@@ -278,7 +278,7 @@ else:
         st.image(fichier, width=220)
     with action:
         st.write("")
-        lancer = st.button("Diagnostiquer", type="primary", use_container_width=True)
+        lancer = st.button("Diagnostiquer", type="primary", width="stretch")
 
     if lancer:
         with st.spinner("Analyse en cours..."):
