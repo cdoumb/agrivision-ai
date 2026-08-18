@@ -879,6 +879,8 @@ le chapitre « resultats » du rapport.
 """))
 
 CELLULES.append(code("""
+import json
+
 VERSION_V2 = "mobilenetv2-v2.0"
 
 derniere_conv = next(c.name for c in reversed(base.layers)
