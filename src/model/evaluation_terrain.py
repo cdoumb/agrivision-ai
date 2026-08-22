@@ -309,10 +309,12 @@ def main():
                 label="PlantDoc (terrain)", color="#c62828")
         axe.set_xticks(positions, [libelles[i] for i in couvertes], rotation=40, ha="right", fontsize=9)
         axe.set_ylabel("F1")
-        axe.set_ylim(0, 1.05)
+        # Les barres de studio frolent 1,0 : sans marge au-dessus, la legende
+        # se pose dessus et masque une classe.
+        axe.set_ylim(0, 1.22)
         axe.set_title(f"Généralisation du modèle {version} : "
                       "conditions de studio contre conditions de terrain")
-        axe.legend()
+        axe.legend(loc="upper center", ncol=2, framealpha=1.0)
         axe.grid(axis="y", alpha=0.3)
         plt.tight_layout()
         plt.savefig(DOSSIER_RAPPORTS / f"robustesse_terrain_{suffixe}.png",
