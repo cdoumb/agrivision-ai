@@ -4,7 +4,7 @@ Generateur du notebook d'amelioration de la robustesse (Binome B).
 Produit : notebooks/02_amelioration_robustesse.ipynb
 
 Le modele v1, entraine uniquement sur PlantVillage (studio), tombe de 96,6 %
-a 35,7 % sur des photographies de terrain. Ce notebook produit un modele v2
+a 36,3 % sur des photographies de terrain. Ce notebook produit un modele v2
 qui corrige cela sur deux fronts : des images de terrain a l'entrainement, et
 cinq corrections dans le code d'entrainement lui-meme.
 
@@ -35,9 +35,10 @@ CELLULES.append(md("""
 # AgriVision-AI - Amelioration de la robustesse (modele v2)
 
 **Lot B (Faustin).** Le modele v1 atteint 96,64 % sur le jeu de test PlantVillage
-mais seulement **35,7 %** sur PlantDoc, un corpus de photographies prises au champ.
-Pire : sa confiance reste a 80,9 % alors qu'il se trompe deux fois sur trois, et il
-ne reconnait aucune des 63 tomates saines de terrain.
+mais seulement **36,3 %** sur PlantDoc, un corpus de photographies prises au champ.
+Pire : il reste aussi confiant quand il se trompe (77,3 %) que lorsqu'il a raison
+(84,4 %), et il ne reconnait quasiment aucune des 63 tomates saines de terrain
+(F1 de 0,06).
 
 Ce notebook produit un modele v2. Il ne remplace pas le v1 : les deux sont conserves
 et compares sur les memes jeux de test.
@@ -732,8 +733,9 @@ CELLULES.append(md("""
 C'est ici que tout se joue. Les deux modeles sont evalues sur exactement les memes
 942 images de terrain, qu'aucun des deux n'a rencontrees a l'entrainement.
 
-Rappel du v1 : 35,7 % d'exactitude, 0,291 de F1 macro, et 80,9 % de confiance moyenne
-malgre deux erreurs sur trois.
+Rappel du v1 : 36,3 % d'exactitude, 0,267 de F1 macro, et une confiance de 77,3 %
+quand il se trompe contre 84,4 % quand il a raison. Deux erreurs sur trois, annoncees
+presque aussi surement que les reussites.
 """))
 
 CELLULES.append(code("""

@@ -1,0 +1,80 @@
+{
+  "model_version": "mobilenetv2-v1.0",
+  "architecture": "MobileNetV2 (ImageNet) + tete dense 10 classes",
+  "date_entrainement": "2026-08-17",
+  "entree": {
+    "taille": [
+      224,
+      224,
+      3
+    ],
+    "plage_valeurs": "0-255 (uint8 ou float) - la normalisation est integree au modele",
+    "remarque": "Le service redimensionne en 224x224 puis passe l'image telle quelle."
+  },
+  "couche_gradcam": "out_relu",
+  "classes": [
+    {
+      "index": 0,
+      "label": "Tomate - Saine"
+    },
+    {
+      "index": 1,
+      "label": "Tomate - Mildiou tardif"
+    },
+    {
+      "index": 2,
+      "label": "Tomate - Tache bacterienne"
+    },
+    {
+      "index": 3,
+      "label": "Tomate - Septoriose"
+    },
+    {
+      "index": 4,
+      "label": "Mais - Sain"
+    },
+    {
+      "index": 5,
+      "label": "Mais - Rouille commune"
+    },
+    {
+      "index": 6,
+      "label": "Mais - Helminthosporiose"
+    },
+    {
+      "index": 7,
+      "label": "Mais - Cercosporiose"
+    },
+    {
+      "index": 8,
+      "label": "Poivron - Sain"
+    },
+    {
+      "index": 9,
+      "label": "Poivron - Tache bacterienne"
+    }
+  ],
+  "decoupage": {
+    "source": "reports/split_manifest.csv (lot A)",
+    "train": 9597,
+    "val": 2058,
+    "test": 2056
+  },
+  "resultats_test": {
+    "exactitude": 0.9664,
+    "perte": 0.089,
+    "f1_macro": 0.9566,
+    "f1_par_classe": {
+      "Tomate - Saine": 0.9855,
+      "Tomate - Mildiou tardif": 0.9648,
+      "Tomate - Tache bacterienne": 0.9715,
+      "Tomate - Septoriose": 0.9567,
+      "Mais - Sain": 0.9971,
+      "Mais - Rouille commune": 0.9972,
+      "Mais - Helminthosporiose": 0.899,
+      "Mais - Cercosporiose": 0.825,
+      "Poivron - Sain": 0.9887,
+      "Poivron - Tache bacterienne": 0.98
+    }
+  }
+}

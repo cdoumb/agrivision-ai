@@ -1,0 +1,137 @@
+{
+  "model_version": "mobilenetv2-v2.0",
+  "remplace": "mobilenetv2-v1.0 (conserve, non ecrase)",
+  "architecture": "MobileNetV2 (ImageNet) + pooling moyenne et maximum + dense 10 classes",
+  "date_entrainement": "2026-08-18",
+  "corpus_entrainement": {
+    "PlantVillage (studio)": 9597,
+    "PlantWild (terrain, CC BY-NC-ND 4.0)": 1765
+  },
+  "corrections": [
+    "augmentation etendue : teinte, saturation, occlusions, flou, translations",
+    "degel de 80 couches sur 154 au lieu de 40",
+    "lissage des etiquettes a 0,1 contre la surconfiance",
+    "melange d'images (mixup) actif",
+    "pooling moyenne et maximum au lieu de la seule moyenne"
+  ],
+  "entree": {
+    "taille": [
+      224,
+      224,
+      3
+    ],
+    "plage_valeurs": "0-255, la normalisation est integree au modele"
+  },
+  "couche_gradcam": "out_relu",
+  "classes": [
+    {
+      "index": 0,
+      "label": "Tomate - Saine"
+    },
+    {
+      "index": 1,
+      "label": "Tomate - Mildiou tardif"
+    },
+    {
+      "index": 2,
+      "label": "Tomate - Tache bacterienne"
+    },
+    {
+      "index": 3,
+      "label": "Tomate - Septoriose"
+    },
+    {
+      "index": 4,
+      "label": "Mais - Sain"
+    },
+    {
+      "index": 5,
+      "label": "Mais - Rouille commune"
+    },
+    {
+      "index": 6,
+      "label": "Mais - Helminthosporiose"
+    },
+    {
+      "index": 7,
+      "label": "Mais - Cercosporiose"
+    },
+    {
+      "index": 8,
+      "label": "Poivron - Sain"
+    },
+    {
+      "index": 9,
+      "label": "Poivron - Tache bacterienne"
+    }
+  ],
+  "resultats": {
+    "terrain_PlantDoc_942_images": {
+      "v1": {
+        "exactitude": 0.3627,
+        "f1_macro": 0.2671,
+        "confiance_si_juste": 0.8436,
+        "confiance_si_faux": 0.7732
+      },
+      "v2": {
+        "exactitude": 0.4899,
+        "f1_macro": 0.452,
+        "confiance_si_juste": 0.5087,
+        "confiance_si_faux": 0.4025
+      }
+    },
+    "studio_PlantVillage_test": {
+      "v1": {
+        "exactitude": 0.9664,
+        "f1_macro": 0.9566
+      },
+      "v2": {
+        "exactitude": 0.9436,
+        "f1_macro": 0.9373
+      }
+    },
+    "f1_terrain_par_classe": {
+      "Tomate - Saine": {
+        "v1": 0.0597,
+        "v2": 0.5909
+      },
+      "Tomate - Mildiou tardif": {
+        "v1": 0.5061,
+        "v2": 0.6909
+      },
+      "Tomate - Tache bacterienne": {
+        "v1": 0.0438,
+        "v2": 0.2451
+      },
+      "Tomate - Septoriose": {
+        "v1": 0.4706,
+        "v2": 0.4034
+      },
+      "Mais - Rouille commune": {
+        "v1": 0.2414,
+        "v2": 0.6068
+      },
+      "Mais - Helminthosporiose": {
+        "v1": 0.4324,
+        "v2": 0.5217
+      },
+      "Mais - Cercosporiose": {
+        "v1": 0.3611,
+        "v2": 0.4398
+      },
+      "Poivron - Sain": {
+        "v1": 0.2105,
+        "v2": 0.5644
+      },
+      "Poivron - Tache bacterienne": {
+        "v1": 0.3452,
+        "v2": 0.4571
+      }
+    }
+  },
+  "limites": [
+    "Mais - Sain est absent de PlantDoc : la classe n'est pas mesuree sur le terrain.",
+    "PlantWild est sous licence CC BY-NC-ND 4.0, usage non commercial uniquement.",
+    "Le test terrain vient d'un corpus unique : d'autres conditions de prise de vue donneraient d'autres chiffres."
+  ]
+}
