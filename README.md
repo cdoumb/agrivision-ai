@@ -74,6 +74,12 @@ Le premier démarrage prend quelques minutes, TensorFlow étant volumineux à
 installer. L'application attend automatiquement que le service ait fini de
 charger le modèle.
 
+La version servie est celle désignée par `AGRIVISION_MODELE` dans
+`docker-compose.yml`, `mobilenetv2_v2.keras` par défaut. Pour rejouer la
+comparaison du rapport, y remplacer `v2` par `v1` et relancer. Le seuil
+d'avertissement de l'application étant calibré sur le v2, un service lancé sur
+le v1 affirme davantage de diagnostics faux que les 403 mesurés à 70 %.
+
 ## Récupérer les données et le modèle
 
 **Modèle entraîné** — `mobilenetv2_v2.keras`, 26 Mo, non versionné (Git n'est pas
@@ -90,6 +96,15 @@ prétraitement attendu.
 `src/data/download.py`. Les images ne sont pas versionnées non plus : elles se
 retéléchargent, et le découpage est reproductible à l'identique grâce à
 `reports/split_manifest.csv`.
+
+La v2 ajoute PlantWild, hébergé sur Hugging Face et distribué sous licence
+**CC BY-NC-ND 4.0** : usage non commercial, sans œuvre dérivée, attribution
+obligatoire. Le projet est un travail académique sans exploitation commerciale.
+Le modèle v2 ne peut donc pas être diffusé à des fins commerciales, et la
+question de savoir si un modèle entraîné constitue une œuvre dérivée au sens de
+la clause ND n'est pas tranchée : toute réutilisation hors du cadre académique
+demande de revenir à la licence. La citation complète figure au chapitre
+« données » du rapport.
 
 ## Lancer sans Docker
 
@@ -119,7 +134,7 @@ pip install pytest httpx
 pytest tests/ -v
 ```
 
-28 tests : 8 sur la validation du service, 20 sur le module d'inférence. Ceux qui
+30 tests : 8 sur la validation du service, 22 sur le module d'inférence. Ceux qui
 nécessitent le fichier `.keras` s'ignorent automatiquement lorsqu'il est absent,
 afin que la suite reste exécutable sur une machine sans le modèle.
 

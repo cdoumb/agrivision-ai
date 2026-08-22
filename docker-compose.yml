@@ -6,11 +6,14 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Le fichier .keras (23 Mo) n'est pas dans l'image ni dans Git : il se
+      # Le fichier .keras (26 Mo) n'est pas dans l'image ni dans Git : il se
       # récupère sur le Drive partagé et se dépose dans ./models.
       - ./models:/app/models:ro
     environment:
-      - AGRIVISION_MODELE=/app/models/mobilenetv2_v1.keras
+      # Version en service. Remplacer v2 par v1 ci-dessous pour rejouer la
+      # comparaison du rapport ; attention, le seuil d'avertissement de
+      # l'application est calibré pour le v2.
+      - AGRIVISION_MODELE=/app/models/mobilenetv2_v2.keras
     healthcheck:
       # Le service met une dizaine de secondes à charger le modèle au
       # démarrage ; sans start_period, l'application le croirait mort.
