@@ -18,8 +18,26 @@ PlantWild (terrain).
 
 | | studio (PlantVillage) | terrain (PlantDoc) |
 |---|---|---|
-| Exactitude | 94,36 % | 48,99 % |
-| F1 macro | 0,9373 | 0,4520 |
+| Exactitude | 94,36 % | 49,47 % |
+| F1 macro, 9 classes comparables | 0,9306 | 0,4976 |
+
+« Maïs - Sain » est absent de PlantDoc, le F1 macro est donc calculé sur les
+9 classes présentes des deux côtés. Sur les 10 classes, il vaut 0,9373 en studio.
+
+Ces chiffres sont ceux mesurés **par le service lui-même**, c'est-à-dire ceux
+qu'obtient un utilisateur qui envoie une photo. Source :
+`reports/robustesse_terrain_v2.json`, reproductible par
+`python src/model/evaluation_terrain.py`.
+
+Le notebook d'entraînement annonce des valeurs proches mais pas identiques,
+48,99 % au champ par exemple. L'écart n'est pas une erreur : le notebook
+redimensionne les images avec `tf.image.resize`, le service avec Pillow, et les
+deux méthodes ne produisent pas exactement la même image de 224 pixels. Mesuré
+sur les images de terrain, l'écart moyen entre les deux atteint 3,65 niveaux sur
+255, ce qui fait basculer la décision pour cinq ou six photographies sur 942.
+Les chiffres de studio, où la réduction est bien plus faible, concordent au
+centième près. Les valeurs du notebook restent la référence pour comparer v1 et
+v2 entre eux, puisque les deux modèles y passent par la même chaîne.
 
 Le jeu de terrain, 942 photographies prises au champ, n'a jamais servi à
 l'entraînement d'aucune version. C'est le seul juge honnête de ce que vaut le
@@ -33,11 +51,12 @@ maladie. Le chapitre « robustesse » du rapport détaille la mesure.
 ### Ce qu'a apporté la version 2
 
 La première version, entraînée sur le seul PlantVillage, atteignait 96,64 % en
-studio mais 36,27 % au champ, et surtout restait aussi confiante quand elle se
-trompait que lorsqu'elle avait raison.
+studio mais 35,67 % au champ, et surtout restait aussi confiante quand elle se
+trompait (77,3 %) que lorsqu'elle avait raison (84,4 %).
 
 Sur les 942 photographies de terrain, en comptant ce que voit réellement
-l'utilisateur :
+l'utilisateur. Ces quatre lignes viennent du notebook, qui mesure les deux
+modèles par la même chaîne :
 
 | | v1 | v2 |
 |---|---|---|
@@ -173,14 +192,23 @@ Le notebook est produit par `notebooks/build_notebook.py`, le format `.ipynb`
 - [`docs/api.md`](./docs/api.md) — documentation du service
 - [`docs/notice_application.md`](./docs/notice_application.md) — notice d'utilisation de l'application
 - [`docs/architecture.png`](./docs/architecture.png) — schéma d'architecture annoté, six couches et frontière A/B
-- `model_card.json` — fiche du modèle, résultats par classe et prétraitement attendu (sur le Drive, avec les modèles)
+- [`reports/model_card.json`](./reports/model_card.json) et [`model_card_v2.json`](./reports/model_card_v2.json) — fiches des deux modèles, résultats par classe et prétraitement attendu
+- [`reports/gradcam_commentaires.md`](./reports/gradcam_commentaires.md) — quatre cartes Grad-CAM analysées
+- `reports/robustesse_terrain_v1.json`, `_v2.json` — mesures sur les 942 images de terrain
 
 ## Limites connues
 
 **Au champ, le modèle se trompe une fois sur deux.** C'est mesuré, pas supposé :
-48,99 % d'exactitude sur 942 photographies de terrain, contre 94,36 % en studio.
+49,47 % d'exactitude sur 942 photographies de terrain, contre 94,36 % en studio.
 L'application est conçue autour de cette limite, en signalant explicitement les
 diagnostics incertains plutôt qu'en affichant un chiffre rassurant.
+
+Ce chiffre sous-estime toutefois le modèle, dans une proportion que nous n'avons
+pas quantifiée : PlantDoc contient des étiquettes erronées. Un cas est documenté
+dans [`reports/gradcam_commentaires.md`](./reports/gradcam_commentaires.md), où
+une image rangée en septoriose porte une mention de la base EPPO désignant
+*Xanthomonas vesicatoria*, agent de la tache bactérienne. Le diagnostic compté
+comme faux était le bon.
 
 L'entraînement repose majoritairement sur PlantVillage, photographié en studio,
 feuille détachée sur fond uni. PlantWild apporte des images de terrain, mais en
@@ -189,11 +217,15 @@ la prise de vue et non la seule maladie.
 
 Les cartes Grad-CAM se posent sur les lésions et non sur le fond, ce qui écarte
 l'hypothèse d'un modèle ayant appris le décor. Cette vérification reste toutefois
-faite sur les corpus disponibles.
+faite sur les corpus disponibles. Quatre cas sont analysés dans
+[`reports/gradcam_commentaires.md`](./reports/gradcam_commentaires.md), dont une
+erreur affirmée à 88 % où la carte montre que le modèle visait bien les lésions.
 
 Le jeu de test de terrain provient d'une source unique, PlantDoc. D'autres
 conditions de prise de vue donneraient d'autres chiffres. La classe
-« Maïs - Sain » y est absente et n'a donc pas pu être évaluée au champ.
+« Maïs - Sain » y est absente et n'a donc pas pu être évaluée au champ. Le corpus
+n'est pas homogène non plus : certaines de ses images sont photographiées sur
+fond uni, feuille détachée, dans des conditions proches du studio.
 
 Toute image n'appartenant pas aux 10 classes est rapprochée de force de l'une
 d'entre elles : le modèle répartit toujours 100 % de certitude entre les classes

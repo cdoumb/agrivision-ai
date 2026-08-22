@@ -135,7 +135,7 @@ Elle regroupe trois informations permanentes :
 ## Les limites à garder en tête
 
 Au champ, le modèle se trompe environ une fois sur deux. Ce chiffre est mesuré, pas
-supposé : 48,99 % d'exactitude sur 942 photographies prises en conditions réelles, contre
+supposé : 49,47 % d'exactitude sur 942 photographies prises en conditions réelles, contre
 94,36 % sur des photographies de studio. L'application est conçue autour de cette limite,
 en signalant ses doutes plutôt qu'en affichant un chiffre rassurant.
 
