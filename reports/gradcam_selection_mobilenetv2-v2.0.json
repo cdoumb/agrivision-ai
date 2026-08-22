@@ -1,0 +1,43 @@
+{
+  "modele": "mobilenetv2-v2.0",
+  "seuil_avertissement": 0.6,
+  "images_examinees": 56,
+  "cas": [
+    {
+      "critere": "Diagnostic juste, conditions de studio",
+      "image": "data/echantillon/Tomate__Saine_2.jpg",
+      "origine": "studio",
+      "verite": "Tomate - Saine",
+      "diagnostic": "Tomate - Saine",
+      "confiance": 0.96,
+      "juste": true
+    },
+    {
+      "critere": "Diagnostic juste, conditions de terrain",
+      "image": "data/plantdoc_images/Bell_pepper leaf/test_10148582-green-leaf-of-pepper.jpg",
+      "origine": "terrain",
+      "verite": "Poivron - Sain",
+      "diagnostic": "Poivron - Sain",
+      "confiance": 0.8532,
+      "juste": true
+    },
+    {
+      "critere": "Erreur affirmée sans avertissement",
+      "image": "data/plantdoc_images/Tomato Septoria leaf spot/train_3893.jpg",
+      "origine": "terrain",
+      "verite": "Tomate - Septoriose",
+      "diagnostic": "Poivron - Tache bactérienne",
+      "confiance": 0.8765,
+      "juste": false
+    },
+    {
+      "critere": "Le modèle prévient : confiance sous 60 %",
+      "image": "data/plantdoc_images/Tomato leaf late blight/train_IMG_5813.jpg",
+      "origine": "terrain",
+      "verite": "Tomate - Mildiou tardif",
+      "diagnostic": "Tomate - Mildiou tardif",
+      "confiance": 0.1864,
+      "juste": true
+    }
+  ]
+}
