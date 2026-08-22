@@ -1,0 +1,69 @@
+{
+  "corpus_terrain": "PlantDoc (github.com/pratikkayal/PlantDoc-Dataset)",
+  "modele": "mobilenetv2-v1.0",
+  "chaine_mesure": "service d'inférence (Pillow), src/model/inference.py",
+  "images_evaluees": 942,
+  "classes_couvertes": 9,
+  "classe_non_couverte": "Maïs - Sain",
+  "studio": {
+    "exactitude": 0.9664,
+    "f1_macro_9_classes": 0.9520444444444445
+  },
+  "terrain": {
+    "exactitude": 0.3567,
+    "f1_macro_9_classes": 0.2908,
+    "confiance_moyenne": 0.809
+  },
+  "f1_par_classe": {
+    "Tomate - Saine": {
+      "studio": 0.9855,
+      "terrain": 0.0,
+      "images_terrain": 63
+    },
+    "Tomate - Mildiou tardif": {
+      "studio": 0.9648,
+      "terrain": 0.4706,
+      "images_terrain": 111
+    },
+    "Tomate - Tache bactérienne": {
+      "studio": 0.9715,
+      "terrain": 0.0444,
+      "images_terrain": 110
+    },
+    "Tomate - Septoriose": {
+      "studio": 0.9567,
+      "terrain": 0.4585,
+      "images_terrain": 151
+    },
+    "Maïs - Rouille commune": {
+      "studio": 0.9972,
+      "terrain": 0.3214,
+      "images_terrain": 116
+    },
+    "Maïs - Helminthosporiose": {
+      "studio": 0.899,
+      "terrain": 0.4362,
+      "images_terrain": 191
+    },
+    "Maïs - Cercosporiose": {
+      "studio": 0.825,
+      "terrain": 0.3443,
+      "images_terrain": 68
+    },
+    "Poivron - Sain": {
+      "studio": 0.9887,
+      "terrain": 0.2308,
+      "images_terrain": 61
+    },
+    "Poivron - Tache bactérienne": {
+      "studio": 0.98,
+      "terrain": 0.3108,
+      "images_terrain": 71
+    }
+  },
+  "limites": [
+    "Maïs - Sain est absent de PlantDoc : la classe ne peut pas être mesurée, et le modèle peut la prédire à tort sans qu'aucune image ne le contredise.",
+    "La correspondance entre « Bell_pepper leaf spot » et « Poivron - Tache bactérienne » est une approximation : PlantDoc ne précise pas l'agent.",
+    "Les classes comptant une soixantaine d'images ont une marge d'erreur large."
+  ]
+}

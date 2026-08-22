@@ -11,13 +11,23 @@ garantit qu'il ait appris la maladie plutôt que ces conditions de prise de vue.
 Ce script le confronte à PlantDoc, un corpus de photographies prises au champ,
 sans réentraîner quoi que ce soit.
 
+Le modèle évalué est celui que charge src/model/inference.py, donc le v2 par
+défaut. Pour mesurer le v1, pointer AGRIVISION_MODELE dessus :
+
+    AGRIVISION_MODELE=models/mobilenetv2_v1.keras python src/model/evaluation_terrain.py
+
+Les chiffres de studio auxquels le terrain est comparé sont lus dans la fiche du
+modèle chargé, dans reports/. Ils ne sont pas codés en dur : comparer le terrain
+d'une version au studio d'une autre produirait un tableau faux sans que rien ne
+le signale.
+
 Usage :
     python src/model/evaluation_terrain.py
 
-Produit dans reports/ :
-    robustesse_terrain.json   les chiffres
-    robustesse_terrain.png    comparaison studio / terrain par classe
-    confusion_terrain.png     matrice de confusion sur images de terrain
+Produit dans reports/, suffixé par la version (v1, v2) :
+    robustesse_terrain_<v>.json   les chiffres
+    robustesse_terrain_<v>.png    comparaison studio / terrain par classe
+    robustesse_confusion_<v>.png  matrice de confusion sur images de terrain
 """
 import json
 import sys
@@ -60,18 +70,86 @@ CORRESPONDANCE = {
 
 CLASSE_NON_COUVERTE = 4
 
-# Résultats sur le jeu de test PlantVillage, pour la comparaison.
-# Source : reports/model_card.json produit par le notebook d'entraînement.
-F1_STUDIO = {
-    0: 0.9855, 1: 0.9648, 2: 0.9715, 3: 0.9567, 4: 0.9971,
-    5: 0.9972, 6: 0.8990, 7: 0.8250, 8: 0.9887, 9: 0.9800,
-}
-EXACTITUDE_STUDIO = 0.9664
-
-
 def sans_accents(texte):
     return "".join(c for c in unicodedata.normalize("NFD", texte)
                    if unicodedata.category(c) != "Mn")
+
+
+# ---------------------------------------------------------------------------
+# Référence studio
+# ---------------------------------------------------------------------------
+# Les chiffres de studio étaient autrefois recopiés en dur ici, ceux du v1. Le
+# jour où le service est passé au v2, ce script a continué de comparer le
+# terrain du v2 au studio du v1 : un tableau faux, sans le moindre message
+# d'erreur. Ils sont désormais lus dans la fiche du modèle réellement chargé, et
+# le script refuse de tourner si cette fiche est absente.
+
+def _cle_version(version):
+    """« mobilenetv2-v2.0 » donne « v2 », clé utilisée dans les fiches."""
+    fin = version.rsplit("-", 1)[-1]
+    return fin.split(".")[0]
+
+
+def _extraire_studio(fiche, cle, indice_par_libelle):
+    """
+    Résultats de studio d'une fiche, quel que soit son format.
+
+    Le v1 les range sous `resultats_test`, le v2 sous
+    `resultats.studio_PlantVillage_test`. Renvoie (exactitude, {indice: f1}) ;
+    le détail par classe peut être vide, il n'est pas présent dans toutes les
+    fiches.
+    """
+    def indice_de(libelle):
+        return indice_par_libelle.get(sans_accents(libelle).strip().lower())
+
+    resultats_v1 = fiche.get("resultats_test")
+    if resultats_v1:
+        detail = resultats_v1.get("f1_par_classe", {})
+        f1 = {indice_de(l): v for l, v in detail.items() if indice_de(l) is not None}
+        return resultats_v1.get("exactitude"), f1
+
+    resultats = fiche.get("resultats", {})
+    studio = resultats.get("studio_PlantVillage_test", {}).get(cle, {})
+    detail = resultats.get("f1_studio_par_classe", {})
+    f1 = {indice_de(l): v[cle] for l, v in detail.items()
+          if indice_de(l) is not None and cle in v}
+    return studio.get("exactitude"), f1
+
+
+def charger_reference_studio(version, libelles):
+    """
+    Cherche dans reports/ la fiche dont `model_version` vaut `version`.
+
+    Renvoie (exactitude_studio, {indice: f1_studio}). Lève SystemExit si aucune
+    fiche ne correspond : sans référence, la comparaison studio contre terrain
+    n'a pas de sens et vaut mieux ne pas être produite du tout.
+    """
+    indice_par_libelle = {sans_accents(l).strip().lower(): i
+                          for i, l in enumerate(libelles)}
+
+    for chemin in sorted(DOSSIER_RAPPORTS.glob("*.json")):
+        try:
+            with open(chemin, encoding="utf-8") as f:
+                fiche = json.load(f)
+        except (ValueError, OSError):
+            continue
+        if not isinstance(fiche, dict) or fiche.get("model_version") != version:
+            continue
+
+        exactitude, f1 = _extraire_studio(fiche, _cle_version(version), indice_par_libelle)
+        if exactitude is None:
+            continue
+        print(f"Référence de studio : {chemin.name} ({version})")
+        if not f1:
+            print("  le détail par classe manque dans cette fiche : la comparaison "
+                  "par classe sera omise.")
+        return float(exactitude), f1
+
+    raise SystemExit(
+        f"Aucune fiche de modèle pour « {version} » dans {DOSSIER_RAPPORTS}.\n"
+        "Les résultats de studio y sont lus, ils ne sont plus codés en dur. "
+        "Déposer le model_card correspondant avant de relancer."
+    )
 
 
 def rassembler_images():
@@ -129,6 +207,10 @@ def main():
     classes = inference._charger_classes()
     libelles = [c["label"] for c in classes]
 
+    version = inference.VERSION_MODELE
+    exactitude_studio, f1_studio = charger_reference_studio(version, libelles)
+    suffixe = _cle_version(version)
+
     print("Collecte des images de terrain...")
     chemins, verites, manquants = rassembler_images()
     if manquants:
@@ -158,20 +240,36 @@ def main():
                              average=None, zero_division=0)
     f1_macro = float(np.mean(f1_par_classe))
 
+    # Le détail par classe n'existe que si la fiche du modèle le porte.
+    comparables = [i for i in couvertes if i in f1_studio]
+    f1_macro_studio = (float(np.mean([f1_studio[i] for i in comparables]))
+                       if comparables else None)
+
     print()
     print("=" * 68)
+    print(f"Modèle : {version}")
     print(f"{'':<32}{'studio':>12}{'terrain':>12}{'écart':>10}")
     print("-" * 68)
-    print(f"{'Exactitude globale':<32}{EXACTITUDE_STUDIO:>11.1%}{exactitude:>12.1%}"
-          f"{exactitude - EXACTITUDE_STUDIO:>+10.1%}")
+    print(f"{'Exactitude globale':<32}{exactitude_studio:>11.1%}{exactitude:>12.1%}"
+          f"{exactitude - exactitude_studio:>+10.1%}")
     print()
-    for rang, indice in enumerate(couvertes):
-        studio, terrain = F1_STUDIO[indice], float(f1_par_classe[rang])
-        print(f"{libelles[indice]:<32}{studio:>11.3f}{terrain:>12.3f}{terrain - studio:>+10.3f}")
-    print("-" * 68)
-    print(f"{'F1 macro (9 classes)':<32}"
-          f"{np.mean([F1_STUDIO[i] for i in couvertes]):>11.3f}{f1_macro:>12.3f}"
-          f"{f1_macro - np.mean([F1_STUDIO[i] for i in couvertes]):>+10.3f}")
+    if comparables:
+        for rang, indice in enumerate(couvertes):
+            terrain = float(f1_par_classe[rang])
+            if indice not in f1_studio:
+                print(f"{libelles[indice]:<32}{'—':>11}{terrain:>12.3f}{'':>10}")
+                continue
+            studio = f1_studio[indice]
+            print(f"{libelles[indice]:<32}{studio:>11.3f}{terrain:>12.3f}"
+                  f"{terrain - studio:>+10.3f}")
+        print("-" * 68)
+        print(f"{'F1 macro (9 classes)':<32}{f1_macro_studio:>11.3f}{f1_macro:>12.3f}"
+              f"{f1_macro - f1_macro_studio:>+10.3f}")
+    else:
+        for rang, indice in enumerate(couvertes):
+            print(f"{libelles[indice]:<32}{'—':>11}{float(f1_par_classe[rang]):>12.3f}")
+        print("-" * 68)
+        print(f"{'F1 macro (9 classes)':<32}{'—':>11}{f1_macro:>12.3f}")
     print("=" * 68)
 
     print()
@@ -198,23 +296,28 @@ def main():
 
     DOSSIER_RAPPORTS.mkdir(exist_ok=True)
 
-    # Comparaison studio / terrain
+    # Comparaison studio / terrain. Sans détail de studio par classe, la figure
+    # n'aurait qu'une série : on ne la produit pas, une comparaison à une seule
+    # colonne induirait en erreur.
     positions = np.arange(len(couvertes))
     largeur = 0.38
-    figure, axe = plt.subplots(figsize=(11, 5.5))
-    axe.bar(positions - largeur / 2, [F1_STUDIO[i] for i in couvertes], largeur,
-            label="PlantVillage (studio)", color="#37474f")
-    axe.bar(positions + largeur / 2, f1_par_classe, largeur,
-            label="PlantDoc (terrain)", color="#c62828")
-    axe.set_xticks(positions, [libelles[i] for i in couvertes], rotation=40, ha="right", fontsize=9)
-    axe.set_ylabel("F1")
-    axe.set_ylim(0, 1.05)
-    axe.set_title("Généralisation du modèle : conditions de studio contre conditions de terrain")
-    axe.legend()
-    axe.grid(axis="y", alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(DOSSIER_RAPPORTS / "robustesse_terrain.png", dpi=150, bbox_inches="tight")
-    plt.close()
+    if comparables:
+        figure, axe = plt.subplots(figsize=(11, 5.5))
+        axe.bar(positions - largeur / 2, [f1_studio.get(i, 0.0) for i in couvertes], largeur,
+                label="PlantVillage (studio)", color="#37474f")
+        axe.bar(positions + largeur / 2, f1_par_classe, largeur,
+                label="PlantDoc (terrain)", color="#c62828")
+        axe.set_xticks(positions, [libelles[i] for i in couvertes], rotation=40, ha="right", fontsize=9)
+        axe.set_ylabel("F1")
+        axe.set_ylim(0, 1.05)
+        axe.set_title(f"Généralisation du modèle {version} : "
+                      "conditions de studio contre conditions de terrain")
+        axe.legend()
+        axe.grid(axis="y", alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(DOSSIER_RAPPORTS / f"robustesse_terrain_{suffixe}.png",
+                    dpi=150, bbox_inches="tight")
+        plt.close()
 
     # Matrice de confusion sur les 10 classes (le modèle peut prédire la 4)
     matrice = confusion_matrix(verites, predictions, labels=list(range(10)))
@@ -228,7 +331,7 @@ def main():
     axe.set_yticks(range(len(lignes_utiles)), [libelles[i] for i in lignes_utiles], fontsize=8)
     axe.set_xlabel("Classe prédite")
     axe.set_ylabel("Classe réelle")
-    axe.set_title(f"Images de terrain — exactitude {exactitude:.1%}")
+    axe.set_title(f"Images de terrain, modèle {version} — exactitude {exactitude:.1%}")
     for i in range(len(lignes_utiles)):
         for j in range(10):
             if matrice_reduite[i, j] > 0:
@@ -236,7 +339,11 @@ def main():
                          color="white" if normalisee[i, j] > 0.5 else "black")
     figure.colorbar(image, ax=axe, fraction=0.046)
     plt.tight_layout()
-    plt.savefig(DOSSIER_RAPPORTS / "confusion_terrain.png", dpi=150, bbox_inches="tight")
+    # Préfixe « robustesse_ » pour toutes les sorties de ce script : le notebook
+    # v2 produit de son côté un confusion_terrain_v2.png qui compare les deux
+    # modèles, ce n'est pas la même figure et elle ne doit pas être écrasée.
+    plt.savefig(DOSSIER_RAPPORTS / f"robustesse_confusion_{suffixe}.png",
+                dpi=150, bbox_inches="tight")
     plt.close()
 
     # ------------------------------------------------------------------
@@ -244,13 +351,18 @@ def main():
     # ------------------------------------------------------------------
     resultats = {
         "corpus_terrain": "PlantDoc (github.com/pratikkayal/PlantDoc-Dataset)",
-        "modele": inference.VERSION_MODELE,
+        "modele": version,
+        # Le notebook Colab mesure les mêmes images via tf.image.resize et
+        # obtient des chiffres proches mais pas identiques, à un demi-point
+        # près. Preciser la chaine evite de comparer deux mesures qui ne
+        # passent pas par le meme pretraitement.
+        "chaine_mesure": "service d'inférence (Pillow), src/model/inference.py",
         "images_evaluees": int(len(predictions)),
         "classes_couvertes": len(CORRESPONDANCE),
         "classe_non_couverte": libelles[CLASSE_NON_COUVERTE],
         "studio": {
-            "exactitude": EXACTITUDE_STUDIO,
-            "f1_macro_9_classes": float(np.mean([F1_STUDIO[i] for i in couvertes])),
+            "exactitude": exactitude_studio,
+            "f1_macro_9_classes": f1_macro_studio,
         },
         "terrain": {
             "exactitude": round(exactitude, 4),
@@ -259,7 +371,7 @@ def main():
         },
         "f1_par_classe": {
             libelles[indice]: {
-                "studio": F1_STUDIO[indice],
+                "studio": f1_studio.get(indice),
                 "terrain": round(float(f1_par_classe[rang]), 4),
                 "images_terrain": int((verites == indice).sum()),
             }
@@ -274,12 +386,17 @@ def main():
         ],
     }
 
-    with open(DOSSIER_RAPPORTS / "robustesse_terrain.json", "w", encoding="utf-8") as f:
+    with open(DOSSIER_RAPPORTS / f"robustesse_terrain_{suffixe}.json", "w",
+              encoding="utf-8") as f:
         json.dump(resultats, f, ensure_ascii=False, indent=2)
 
+    ecrits = [f"robustesse_terrain_{suffixe}.json",
+              f"robustesse_confusion_{suffixe}.png"]
+    if comparables:
+        ecrits.insert(1, f"robustesse_terrain_{suffixe}.png")
+
     print()
-    print("Écrit dans reports/ : robustesse_terrain.json, robustesse_terrain.png, "
-          "confusion_terrain.png")
+    print("Écrit dans reports/ : " + ", ".join(ecrits))
     return 0
 
 

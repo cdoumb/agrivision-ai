@@ -18,6 +18,7 @@ import base64
 import io
 import json
 import os
+import re
 import threading
 from pathlib import Path
 
@@ -87,7 +88,26 @@ def _trouver_modele():
 CHEMIN_MODELE = _trouver_modele() or (RACINE_MODULE / NOM_FICHIER_MODELE)
 
 TAILLE_ENTREE = 224
-VERSION_MODELE = "mobilenetv2-v2.0"
+
+
+def version_depuis_chemin(chemin):
+    """
+    Déduit la version annoncée du nom du fichier chargé.
+
+    Cette valeur était autrefois une constante. Elle mentait dès qu'on pointait
+    AGRIVISION_MODELE sur une autre version : /health annonçait le v2 en servant
+    les poids du v1, et le script d'évaluation comparait le terrain d'un modèle
+    au studio de l'autre. Rien ne le signalait, puisque aucune erreur ne se
+    produit dans ce cas.
+    """
+    correspondance = re.match(r"^([a-z0-9]+)_v(\d+)$", Path(chemin).stem.lower())
+    if not correspondance:
+        return "inconnu"
+    architecture, numero = correspondance.groups()
+    return f"{architecture}-v{numero}.0"
+
+
+VERSION_MODELE = version_depuis_chemin(CHEMIN_MODELE)
 
 # Chargement protégé par un verrou : sans lui, deux requêtes simultanées
 # arrivant sur un service fraîchement démarré chargeraient le modèle deux fois.
