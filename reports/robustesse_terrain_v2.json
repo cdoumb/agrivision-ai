@@ -7,7 +7,7 @@
   "classe_non_couverte": "Maïs - Sain",
   "studio": {
     "exactitude": 0.9436,
-    "f1_macro_9_classes": null
+    "f1_macro_9_classes": 0.9306333333333333
   },
   "terrain": {
     "exactitude": 0.4947,
@@ -16,47 +16,47 @@
   },
   "f1_par_classe": {
     "Tomate - Saine": {
-      "studio": null,
+      "studio": 0.9675,
       "terrain": 0.5522,
       "images_terrain": 63
     },
     "Tomate - Mildiou tardif": {
-      "studio": null,
+      "studio": 0.9372,
       "terrain": 0.7213,
       "images_terrain": 111
     },
     "Tomate - Tache bactérienne": {
-      "studio": null,
+      "studio": 0.9288,
       "terrain": 0.2256,
       "images_terrain": 110
     },
     "Tomate - Septoriose": {
-      "studio": null,
+      "studio": 0.8976,
       "terrain": 0.3933,
       "images_terrain": 151
     },
     "Maïs - Rouille commune": {
-      "studio": null,
+      "studio": 1.0,
       "terrain": 0.6449,
       "images_terrain": 116
     },
     "Maïs - Helminthosporiose": {
-      "studio": null,
+      "studio": 0.8754,
       "terrain": 0.5201,
       "images_terrain": 191
     },
     "Maïs - Cercosporiose": {
-      "studio": null,
+      "studio": 0.8118,
       "terrain": 0.4498,
       "images_terrain": 68
     },
     "Poivron - Sain": {
-      "studio": null,
+      "studio": 0.9932,
       "terrain": 0.5514,
       "images_terrain": 61
     },
     "Poivron - Tache bactérienne": {
-      "studio": null,
+      "studio": 0.9642,
       "terrain": 0.4202,
       "images_terrain": 71
     }

@@ -127,6 +127,48 @@
         "v1": 0.3452,
         "v2": 0.4571
       }
+    },
+    "f1_studio_par_classe": {
+      "Tomate - Saine": {
+        "v1": 0.9855,
+        "v2": 0.9675
+      },
+      "Tomate - Mildiou tardif": {
+        "v1": 0.9648,
+        "v2": 0.9372
+      },
+      "Tomate - Tache bacterienne": {
+        "v1": 0.9715,
+        "v2": 0.9288
+      },
+      "Tomate - Septoriose": {
+        "v1": 0.9567,
+        "v2": 0.8976
+      },
+      "Mais - Sain": {
+        "v1": 0.9971,
+        "v2": 0.9971
+      },
+      "Mais - Rouille commune": {
+        "v1": 0.9972,
+        "v2": 1.0
+      },
+      "Mais - Helminthosporiose": {
+        "v1": 0.899,
+        "v2": 0.8754
+      },
+      "Mais - Cercosporiose": {
+        "v1": 0.825,
+        "v2": 0.8118
+      },
+      "Poivron - Sain": {
+        "v1": 0.9887,
+        "v2": 0.9932
+      },
+      "Poivron - Tache bacterienne": {
+        "v1": 0.98,
+        "v2": 0.9642
+      }
     }
   },
   "limites": [
