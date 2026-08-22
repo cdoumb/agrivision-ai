@@ -163,15 +163,17 @@ Le notebook est produit par `notebooks/build_notebook.py`, le format `.ipynb`
 | `src/model/` | Inférence, Grad-CAM | B |
 | `src/app/` | Application Streamlit | B |
 | `models/` | Modèle entraîné (non versionné) | B |
-| `reports/` | Statistiques, découpage, matrice de confusion, courbes | Les deux |
-| `docs/` | Schéma d'architecture, doc API, rapport | Les deux |
+| `reports/` | Statistiques du corpus, découpage, mesures de robustesse | Les deux |
+| `docs/` | Schéma d'architecture, doc API, notice de l'application | Les deux |
 
 ## Documents clés
 
 - [`contrat_interface.md`](./contrat_interface.md) — format image, API, classes (gelé au 14/08)
 - [`classes.json`](./classes.json) — liste ordonnée des 10 classes, source unique
 - [`docs/api.md`](./docs/api.md) — documentation du service
-- `reports/model_card.json` — fiche du modèle (sur le Drive)
+- [`docs/notice_application.md`](./docs/notice_application.md) — notice d'utilisation de l'application
+- [`docs/architecture.png`](./docs/architecture.png) — schéma d'architecture annoté, six couches et frontière A/B
+- `model_card.json` — fiche du modèle, résultats par classe et prétraitement attendu (sur le Drive, avec les modèles)
 
 ## Limites connues
 
