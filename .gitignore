@@ -26,3 +26,6 @@ Thumbs.db
 # Secrets
 .env
 kaggle.json
+
+# Rapport genere : se reconstruit avec rapport/build/build_rapport.py
+rapport/*.docx

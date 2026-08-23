@@ -184,6 +184,7 @@ Le notebook est produit par `notebooks/build_notebook.py`, le format `.ipynb`
 | `models/` | Modèle entraîné (non versionné) | B |
 | `reports/` | Statistiques du corpus, découpage, mesures de robustesse | Les deux |
 | `docs/` | Schéma d'architecture, doc API, notice de l'application | Les deux |
+| `rapport/` | Rapport de projet, un chapitre Markdown par fichier | Les deux |
 
 ## Documents clés
 
@@ -193,6 +194,7 @@ Le notebook est produit par `notebooks/build_notebook.py`, le format `.ipynb`
 - [`docs/notice_application.md`](./docs/notice_application.md) — notice d'utilisation de l'application
 - [`docs/architecture.png`](./docs/architecture.png) — schéma d'architecture annoté, six couches et frontière A/B
 - [`reports/model_card.json`](./reports/model_card.json) et [`model_card_v2.json`](./reports/model_card_v2.json) — fiches des deux modèles, résultats par classe et prétraitement attendu
+- [`rapport/README.md`](./rapport/README.md) — mode d'emploi du rapport : qui écrit quoi, syntaxe, génération
 - [`reports/gradcam_commentaires.md`](./reports/gradcam_commentaires.md) — quatre cartes Grad-CAM analysées
 - `reports/robustesse_terrain_v1.json`, `_v2.json` — mesures sur les 942 images de terrain
 
