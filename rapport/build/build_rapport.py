@@ -71,7 +71,7 @@ RE_NOM_CHAPITRE = re.compile(r"^(\d+)_")
 def chapitres():
     """Chapitres tries par leur numero, lu dans le nom du fichier."""
     trouves = []
-    for chemin in sorted(DOSSIER_CHAPITRES.glob("*.md")):
+    for chemin in controle_style.chapitres():
         correspondance = RE_NOM_CHAPITRE.match(chemin.name)
         if correspondance:
             trouves.append((int(correspondance.group(1)), chemin))
@@ -102,7 +102,11 @@ def table_des_illustrations(doc):
 
 
 def construire(journal):
-    doc = nouveau_document(TITRE_PIED)
+    doc = nouveau_document(
+        TITRE_PIED,
+        auteur=" et ".join(META["auteurs"]),
+        titre=f"{META['titre']} : rapport de projet",
+        sujet=META["sous_titre"])
 
     page_de_garde(doc, META["etablissement"], META["filiere"], META["matiere"],
                   META["nature"], META["titre"], META["sous_titre"],
@@ -150,7 +154,14 @@ def main():
     doc = construire(journal)
 
     sortie = DOSSIER_RAPPORT / NOM_FICHIER
-    doc.save(sortie)
+    try:
+        doc.save(sortie)
+    except PermissionError:
+        # Word verrouille le fichier qu'il a ouvert. Le message brut de Python
+        # ne le dit pas, alors que la correction tient en un clic.
+        print(f"\n  Impossible d'ecrire {sortie.name} : le fichier est ouvert.")
+        print("  Fermer le document dans Word, puis relancer.")
+        return 1
 
     print(f"  {len(chapitres())} chapitre(s)")
     print(f"  {CPT.figure} figure(s) numerotee(s)")

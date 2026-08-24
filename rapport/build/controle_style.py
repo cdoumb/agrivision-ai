@@ -128,8 +128,20 @@ def controler(fichiers):
     return infractions
 
 
+def chapitres():
+    """
+    Les fichiers de chapitre, a l'exclusion des fichiers temporaires de Word.
+
+    Ouvrir un .md dans Word depose a cote de lui un fichier « ~$nom.md » qui
+    n'est pas du texte UTF-8. Sans ce filtre, il fait echouer la generation
+    avec une erreur d'encodage incomprehensible.
+    """
+    return sorted(c for c in DOSSIER_CHAPITRES.glob("*.md")
+                  if not c.name.startswith("~$"))
+
+
 def main():
-    fichiers = sorted(DOSSIER_CHAPITRES.glob("*.md"))
+    fichiers = chapitres()
     if not fichiers:
         print(f"  aucun chapitre trouve dans {DOSSIER_CHAPITRES}")
         return 1
