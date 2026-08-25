@@ -32,8 +32,7 @@ Trois propriétés de ce protocole en font une mesure honnête.
 2. **La mesure passe par le service d'inférence lui-même**, `src/model/inference.py`,
    et non par un code d'évaluation séparé. Le chiffre obtenu est donc celui qu'obtient
    réellement un utilisateur qui envoie une photo, prétraitement compris.
-3. **Le résultat de studio auquel il est comparé est lu dans la fiche du modèle
-   chargé**, et non écrit en dur dans le script. Comparer par erreur le terrain d'une
+3. **Le résultat de studio auquel il est comparé est lu dans la fiche du modèle chargé**, et non écrit en dur dans le script. Comparer par erreur le terrain d'une
    version au studio d'une autre était un piège réel, et il a été refermé
    volontairement.
 

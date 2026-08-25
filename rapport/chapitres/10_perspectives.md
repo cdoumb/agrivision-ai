@@ -1,78 +1,76 @@
 # Perspectives
 
-<!--
-    CHEICK : chapitre à toi. Environ 1 page, c'est le plus court.
-    Il s'accroche directement au chapitre 9 : chaque perspective doit répondre
-    à une limite qui y est nommée, sinon elle n'a rien à faire ici.
-    Attention au ton : ce sont des pistes, pas des promesses. Rien de ce qui
-    suit n'a été engagé.
--->
+## Ce qui repondrait a la limite principale
 
-> A REDIGER: Chapitre 10, à rédiger par Cheick. Le plan proposé figure ci-dessous.
+La limite centrale du chapitre 9 est la performance au champ. Les pistes qui
+suivent sont classees par rapport attendu, la premiere etant de loin la plus
+determinante.
 
-## Ce qui répondrait à la limite principale
+Collecter des images de terrain locales est la seule piste qui s'attaque a la
+cause du probleme et non a ses symptomes. Cela suppose des photographies prises
+dans des exploitations senegalaises, sur les trois cultures du perimetre,
+etiquetees par un conseiller agricole plutot que reprises d'un corpus public.
+Nous ne disposons pas d'element permettant de justifier un volume precis a
+viser ; cette piste reste donc decrite qualitativement.
 
-La limite centrale du chapitre 9 est la performance au champ. Les pistes qui suivent
-sont classées par rapport attendu, la première étant de loin la plus déterminante.
+Corriger les etiquettes du corpus de test est une seconde piste, plus rapide a
+mettre en oeuvre. Le chapitre 8 etablit qu'au moins une etiquette de PlantDoc
+est fausse. Une relecture systematique de ce corpus donnerait une mesure plus
+juste de ce que vaut reellement le modele au champ, sans qu'il soit necessaire
+de reentrainer quoi que ce soit.
 
-- **Collecter des images de terrain locales.** C'est la seule piste qui s'attaque à la
-  cause et non aux symptômes. Décrire ce que cela suppose : des photographies prises
-  dans des exploitations sénégalaises, étiquetées par un conseiller agricole, sur les
-  cultures du périmètre. Donner un ordre de grandeur du volume nécessaire si tu peux le
-  justifier, sinon rester qualitatif.
-- **Corriger les étiquettes du corpus de test.** Le chapitre 8 établit qu'au moins une
-  étiquette de PlantDoc est fausse. Une relecture systématique donnerait une mesure plus
-  juste de ce que vaut réellement le modèle, sans réentraîner quoi que ce soit.
-- **Élargir le périmètre à d'autres cultures**, à commencer par celles qui comptent
-  localement et qui sont absentes des dix classes actuelles.
+Elargir le perimetre a d'autres cultures est une troisieme piste, a envisager
+une fois les deux precedentes engagees, en commencant par les cultures qui
+comptent localement et qui sont absentes des dix classes actuelles.
 
-## Le refus de répondre
+## Le refus de repondre
 
-La limite d'usage la plus gênante est qu'une feuille inconnue reçoit tout de même un
-diagnostic. Piste à décrire : un mécanisme de rejet, capable de répondre que l'image
-n'appartient à aucune classe connue, au lieu de répartir de force cent pour cent de
-certitude entre dix possibilités.
+La limite d'usage la plus genante, decrite au chapitre 9, est qu'une feuille
+inconnue du modele recoit tout de meme un diagnostic. Cela tient a la
+conception meme de la tete de classification, decrite au chapitre 4 : la
+couche de sortie en softmax repartit toujours cent pour cent de certitude
+entre les dix classes connues, y compris devant une photographie de manioc ou
+une image sans rapport avec une feuille.
 
-Signaler que cela demande un travail spécifique, et pas seulement un seuil plus haut :
-un modèle surconfiant reste surconfiant devant une image aberrante.
+Un mecanisme de rejet, capable de repondre qu'une image n'appartient a aucune
+classe connue plutot que de forcer un choix parmi les dix, repondrait
+directement a cette limite. Cela demande un travail specifique, et pas
+seulement un seuil de confiance plus eleve : un modele surconfiant reste
+surconfiant devant une image aberrante, un simple relevement du seuil ne
+suffit pas a corriger ce comportement.
 
 ## TensorFlow Lite, option non retenue
 
-<!--
-    À traiter comme un choix assumé, pas comme un oubli. Le sujet le
-    proposait en option, nous ne l'avons pas engagé faute de temps.
--->
+La conversion du modele vers TensorFlow Lite figurait parmi les options du
+sujet initial. Elle apporterait un diagnostic possible sans connexion reseau,
+directement sur le telephone, ce qui correspond exactement au contexte d'usage
+decrit au chapitre 1.
 
-Points à couvrir :
+Cette conversion n'a pas ete engagee au cours des 30 jours du projet : la
+priorite est allee a la mesure de la robustesse au champ et a la construction
+de la version 2 du modele, qui ont revele un probleme plus fondamental qu'un
+probleme de deploiement. Il s'agit d'un choix assume, pas d'un oubli.
 
-- Ce que la conversion apporterait : un diagnostic sans connexion, sur le téléphone
-  directement, ce qui correspond au contexte d'usage décrit au chapitre 1.
-- Pourquoi elle n'a pas été engagée : la priorité est allée à la mesure de robustesse et
-  à la version 2, qui ont révélé un problème plus fondamental qu'un problème de
-  déploiement.
-- Pourquoi elle reste ouverte : le choix de MobileNetV2, justifié au chapitre 4, a été
-  fait en gardant cette voie praticable.
+Cette voie reste ouverte pour la suite. Le choix de MobileNetV2, justifie au
+chapitre 4, a precisement ete fait en gardant cette possibilite praticable,
+contrairement a ce qu'aurait donne une architecture plus lourde comme ResNet50.
 
-## Couche météorologique, option non retenue
+## Couche meteorologique, option non retenue
 
-- Le principe : croiser le diagnostic avec les conditions locales, plusieurs des
-  maladies du périmètre étant favorisées par l'humidité et la chaleur.
-- Pourquoi elle a été écartée : elle suppose un modèle déjà fiable au champ. Ajouter une
-  source de données à un diagnostic juste une fois sur deux n'améliorerait pas la
-  décision, cela la compliquerait.
-- C'est une piste pour une suite, une fois la limite principale traitée.
+Le principe consisterait a croiser le diagnostic du modele avec les conditions
+locales, plusieurs des maladies du perimetre etant favorisees par l'humidite
+et la chaleur.
+
+Cette piste a ete ecartee parce qu'elle suppose un modele deja fiable au
+champ. Ajouter une source de donnees supplementaire a un diagnostic qui n'est
+juste qu'une fois sur deux au champ n'ameliorerait pas la decision de
+l'utilisateur, elle la compliquerait sans en ameliorer la fiabilite. C'est une
+piste a envisager pour une suite du projet, une fois la limite principale
+traitee.
 
 ## Ce que le projet retient
 
-<!--
-    Deux ou trois phrases de clôture pour tout le rapport. Elles doivent
-    porter sur la démarche, pas sur les chiffres, qui sont déjà donnés
-    ailleurs. Le rapport se termine ici.
--->
-
-Piste de formulation, à retravailler dans tes mots :
-
-L'apport principal du projet n'est pas le modèle, c'est la mesure qui en révèle les
-limites. Une plateforme livrée sur la foi des 96,64 pour cent de studio aurait produit
-des diagnostics faux avec assurance, sans que personne ne dispose du moyen de s'en rendre
-compte.
+L'apport principal de ce projet n'est pas le modele en lui-meme, c'est la
+mesure qui en revele les limites. Une plateforme livree sur la seule foi des
+96,64 pour cent obtenus en studio aurait produit des diagnostics faux avec
+assurance, sans que personne ne dispose du moyen de s'en rendre compte.
