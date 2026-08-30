@@ -152,8 +152,8 @@ def _champ(paragraphe, instruction, taille=8, couleur=GRIS_DOUX, gras=False):
 # =============================================================================
 
 def para(doc, texte="", taille=10.5, gras=False, italique=False,
-         couleur=TEXTE_COUL, avant=2, apres=6, police=TEXTE,
-         align=WD_ALIGN_PARAGRAPH.JUSTIFY, retrait=0, interligne=1.08):
+         couleur=TEXTE_COUL, avant=2, apres=5, police=TEXTE,
+         align=WD_ALIGN_PARAGRAPH.JUSTIFY, retrait=0, interligne=1.05):
     p = doc.add_paragraph()
     pf = p.paragraph_format
     pf.space_before = Pt(avant)
@@ -173,8 +173,8 @@ def para(doc, texte="", taille=10.5, gras=False, italique=False,
     return p
 
 
-def riche(doc, morceaux, taille=10.5, avant=2, apres=6, retrait=0,
-          align=WD_ALIGN_PARAGRAPH.JUSTIFY, interligne=1.08):
+def riche(doc, morceaux, taille=10.5, avant=2, apres=5, retrait=0,
+          align=WD_ALIGN_PARAGRAPH.JUSTIFY, interligne=1.05):
     """
     Paragraphe compose de plusieurs morceaux :
         [("texte normal", {}), ("en gras", {"gras": True})]
@@ -198,14 +198,32 @@ def riche(doc, morceaux, taille=10.5, avant=2, apres=6, retrait=0,
     return p
 
 
-def puce(doc, texte, gras_debut=None, retrait=0.7, taille=10.5):
+def _poser_morceaux(p, morceaux, taille):
+    """
+    Ecrit une suite de (texte, options) dans un paragraphe deja mis en forme.
+
+    Meme convention d'options que riche(). La taille demandee par le morceau
+    n'est retenue que pour la chasse fixe, et rapportee a la taille du
+    paragraphe : une police a chasse fixe parait plus grosse a corps egal.
+    """
+    for texte, opts in morceaux:
+        r = p.add_run(texte)
+        police = opts.get("police", TEXTE)
+        r.font.size = Pt(taille - 0.5 if police == MONO else taille)
+        r.font.bold = opts.get("gras", False)
+        r.font.italic = opts.get("italique", False)
+        r.font.color.rgb = opts.get("couleur", TEXTE_COUL)
+        r.font.name = police
+
+
+def puce(doc, texte, gras_debut=None, retrait=0.7, taille=10.5, morceaux=None):
     p = doc.add_paragraph()
     pf = p.paragraph_format
     pf.space_before = Pt(2)
     pf.space_after = Pt(4)
     pf.left_indent = Cm(retrait)
     pf.first_line_indent = Cm(-0.35)
-    pf.line_spacing = 1.15
+    pf.line_spacing = 1.10
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
     r = p.add_run("•\t")
@@ -218,6 +236,9 @@ def puce(doc, texte, gras_debut=None, retrait=0.7, taille=10.5):
         rg.font.bold = True
         rg.font.color.rgb = TEXTE_COUL
         rg.font.name = TEXTE
+    if morceaux is not None:
+        _poser_morceaux(p, morceaux, taille)
+        return p
     r2 = p.add_run(texte)
     r2.font.size = Pt(taille)
     r2.font.color.rgb = TEXTE_COUL
@@ -225,7 +246,8 @@ def puce(doc, texte, gras_debut=None, retrait=0.7, taille=10.5):
     return p
 
 
-def numero(doc, indice, texte, gras_debut=None, retrait=0.9, taille=10.5):
+def numero(doc, indice, texte, gras_debut=None, retrait=0.9, taille=10.5,
+           morceaux=None):
     """Element d'une liste numerotee ecrite a la main (numerotation stable)."""
     p = doc.add_paragraph()
     pf = p.paragraph_format
@@ -233,7 +255,7 @@ def numero(doc, indice, texte, gras_debut=None, retrait=0.9, taille=10.5):
     pf.space_after = Pt(4)
     pf.left_indent = Cm(retrait)
     pf.first_line_indent = Cm(-0.9)
-    pf.line_spacing = 1.15
+    pf.line_spacing = 1.10
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
     r = p.add_run(f"{indice}.\t")
@@ -247,6 +269,9 @@ def numero(doc, indice, texte, gras_debut=None, retrait=0.9, taille=10.5):
         rg.font.bold = True
         rg.font.color.rgb = TEXTE_COUL
         rg.font.name = TEXTE
+    if morceaux is not None:
+        _poser_morceaux(p, morceaux, taille)
+        return p
     r2 = p.add_run(texte)
     r2.font.size = Pt(taille)
     r2.font.color.rgb = TEXTE_COUL
@@ -313,11 +338,11 @@ def titre1(doc, texte, saut=True):
 
 
 def titre2(doc, texte):
-    return _titre(doc, texte, 2, 12.5, avant=12, apres=4)
+    return _titre(doc, texte, 2, 12.5, avant=10, apres=3)
 
 
 def titre3(doc, texte):
-    return _titre(doc, texte, 3, 11, avant=10, apres=3)
+    return _titre(doc, texte, 3, 11, avant=8, apres=2)
 
 
 def intertitre(doc, texte):
@@ -343,7 +368,7 @@ def encadre(doc, etiquette, texte, taille=10):
     pf.space_after = Pt(10)
     pf.left_indent = Cm(0.2)
     pf.right_indent = Cm(0.2)
-    pf.line_spacing = 1.15
+    pf.line_spacing = 1.10
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     if etiquette:
         r = p.add_run(f"{etiquette}   ")
@@ -373,12 +398,19 @@ def vigilance(doc, texte):
 #  Tableaux
 # =============================================================================
 
-def tableau(doc, entetes, lignes, largeurs=None, legende=None, taille=9):
+def tableau(doc, entetes, lignes, largeurs=None, legende=None, taille=9,
+            decoupe=None):
     """
     Tableau a filets fins, en-tete en gras sur fond gris clair.
-    Une valeur entouree de barres obliques inverses passe en chasse fixe :
-        "`classes.json`"
-    Une valeur entouree de deux asterisques passe en gras.
+
+    decoupe est la fonction qui transforme le texte d'une cellule en une suite
+    de (texte, options), typiquement markdown_vers_word.morceaux. Elle permet
+    a une cellule de melanger les genres :
+        "`classes.json`, jamais recopie en dur"
+    Sans elle, on retombe sur la regle historique, qui ne traite que la cellule
+    entiere : entouree de barres obliques inverses elle passe en chasse fixe,
+    entouree de deux asterisques elle passe en gras. Cette regle laissait la
+    balise ouvrante d'une cellule mixte imprimee telle quelle dans le tableau.
     """
     t = doc.add_table(rows=1, cols=len(entetes))
     t.style = "Table Grid"
@@ -416,16 +448,19 @@ def tableau(doc, entetes, lignes, largeurs=None, legende=None, taille=9):
             p.paragraph_format.space_after = Pt(3)
             p.paragraph_format.line_spacing = 1.08
             valeur = str(valeur)
-            fixe = valeur.startswith("`") and valeur.endswith("`") and len(valeur) > 1
-            contenu = valeur.strip("`")
-            gras = contenu.startswith("**") and contenu.endswith("**")
-            if gras:
-                contenu = contenu.strip("*")
-            r = p.add_run(contenu)
-            r.font.size = Pt(taille - 0.5 if fixe else taille)
-            r.font.name = MONO if fixe else TEXTE
-            r.font.bold = gras
-            r.font.color.rgb = TEXTE_COUL
+            if decoupe is not None:
+                _poser_morceaux(p, decoupe(valeur), taille)
+            else:
+                fixe = valeur.startswith("`") and valeur.endswith("`") and len(valeur) > 1
+                contenu = valeur.strip("`")
+                gras = contenu.startswith("**") and contenu.endswith("**")
+                if gras:
+                    contenu = contenu.strip("*")
+                r = p.add_run(contenu)
+                r.font.size = Pt(taille - 0.5 if fixe else taille)
+                r.font.name = MONO if fixe else TEXTE
+                r.font.bold = gras
+                r.font.color.rgb = TEXTE_COUL
             if idx % 2 == 1:
                 _fond_cellule(cells[i], FOND_LIGNE)
 
@@ -450,8 +485,8 @@ def tableau(doc, entetes, lignes, largeurs=None, legende=None, taille=9):
     if legende:
         num = CPT.tableau_suivant(legende)
         p = doc.add_paragraph()
-        p.paragraph_format.space_before = Pt(4)
-        p.paragraph_format.space_after = Pt(12)
+        p.paragraph_format.space_before = Pt(3)
+        p.paragraph_format.space_after = Pt(8)
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         r = p.add_run(f"Tableau {num}. ")
         r.font.size = Pt(9)
@@ -482,7 +517,7 @@ def figure(doc, nom_fichier, legende, largeur_cm=15.0, dossier=None, cadre=False
     num = CPT.figure_suivante(legende)
 
     p = doc.add_paragraph()
-    p.paragraph_format.space_before = Pt(8)
+    p.paragraph_format.space_before = Pt(6)
     p.paragraph_format.space_after = Pt(0)
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = p.add_run()
@@ -492,8 +527,8 @@ def figure(doc, nom_fichier, legende, largeur_cm=15.0, dossier=None, cadre=False
     _sans_coupure(p)
 
     pl = doc.add_paragraph()
-    pl.paragraph_format.space_before = Pt(4)
-    pl.paragraph_format.space_after = Pt(12)
+    pl.paragraph_format.space_before = Pt(3)
+    pl.paragraph_format.space_after = Pt(8)
     pl.alignment = WD_ALIGN_PARAGRAPH.CENTER
     pl.paragraph_format.line_spacing = 1.05
     r1 = pl.add_run(f"Figure {num}. ")

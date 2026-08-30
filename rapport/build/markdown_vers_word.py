@@ -43,12 +43,15 @@ import mise_en_page as mep
 
 RACINE_DEPOT = Path(__file__).resolve().parents[2]
 
-# Largeur par defaut d'une figure. Volontairement inferieure a la largeur
-# utile de la page : les matrices de confusion et les diagrammes en barres
-# restent lisibles a cette taille, et le rapport doit tenir dans les 30 pages
-# demandees. Une figure qui a besoin de plus se declare au cas par cas :
-#     ![legende|15](reports/x.png)
-LARGEUR_FIGURE_CM = 11.5
+# Largeur par defaut d'une figure, en centimetres. La largeur utile de la page
+# est de 17,2 cm (21,0 moins deux marges de 1,9). Les figures etaient posees a
+# 11,5 cm, soit les deux tiers de cette largeur : les etiquettes des matrices
+# de confusion et de la planche Grad-CAM devenaient illisibles a l'impression.
+# A 16 cm, les sources en 150 dpi rendent encore entre 230 et 300 dpi.
+#
+# Une figure haute se declare au cas par cas, sinon elle occupe une page
+# entiere : ![legende|12.5](reports/x.png)
+LARGEUR_FIGURE_CM = 16.0
 
 # Etiquettes d'encadre reconnues en tete de citation.
 ETIQUETTES = {
@@ -114,12 +117,20 @@ def blocs(source):
 
     Un bloc est un tuple (nature, charge). Cette etape separe l'analyse du
     texte de sa mise en forme, ce qui rend chacune des deux lisible seule.
+
+    Un element de liste peut s'etendre sur plusieurs lignes, a condition que
+    les suivantes soient indentees. Elles sont alors recollees a l'element,
+    et non traitees comme un paragraphe autonome : sans cela un **gras** ou
+    une `chasse fixe` a cheval sur un retour a la ligne verrait sa balise
+    ouvrante et sa balise fermante atterrir dans deux blocs differents, et
+    l'une des deux serait imprimee telle quelle dans le document.
     """
     source = RE_COMMENTAIRE.sub("", source)
     lignes = source.splitlines()
     resultat = []
     paragraphe = []
     tableau = []
+    dernier_item = None                # indice du dernier element de liste ouvert
 
     def vider_paragraphe():
         if paragraphe:
@@ -131,11 +142,20 @@ def blocs(source):
             resultat.append(("tableau", list(tableau)))
             tableau.clear()
 
+    def prolonger_item(indice, suite):
+        """Recolle une ligne de continuation a l'element de liste ouvert."""
+        nature, charge = resultat[indice]
+        if nature == "numero":
+            resultat[indice] = (nature, (charge[0], f"{charge[1]} {suite}"))
+        else:
+            resultat[indice] = (nature, f"{charge} {suite}")
+
     for brute in lignes:
         ligne = brute.rstrip()
 
         if RE_TABLEAU.match(ligne):
             vider_paragraphe()
+            dernier_item = None
             if not RE_SEPARATEUR.match(ligne):
                 tableau.append([c.strip() for c in ligne.strip().strip("|").split("|")])
             continue
@@ -143,17 +163,20 @@ def blocs(source):
 
         if not ligne.strip():
             vider_paragraphe()
+            dernier_item = None
             continue
 
         correspondance = RE_LEGENDE_TABLEAU.match(ligne)
         if correspondance:
             vider_paragraphe()
+            dernier_item = None
             resultat.append(("legende_tableau", correspondance.group(1).strip()))
             continue
 
         correspondance = RE_FIGURE.match(ligne)
         if correspondance:
             vider_paragraphe()
+            dernier_item = None
             legende, largeur, chemin = correspondance.groups()
             resultat.append(("figure", (legende.strip(), largeur, chemin.strip())))
             continue
@@ -161,6 +184,7 @@ def blocs(source):
         correspondance = RE_TITRE.match(ligne)
         if correspondance:
             vider_paragraphe()
+            dernier_item = None
             resultat.append((f"titre{len(correspondance.group(1))}",
                              correspondance.group(2).strip()))
             continue
@@ -168,6 +192,7 @@ def blocs(source):
         correspondance = RE_CITATION.match(ligne)
         if correspondance:
             vider_paragraphe()
+            dernier_item = None
             resultat.append(("citation", correspondance.group(1).strip()))
             continue
 
@@ -176,14 +201,22 @@ def blocs(source):
             vider_paragraphe()
             resultat.append(("numero", (int(correspondance.group(1)),
                                         correspondance.group(2).strip())))
+            dernier_item = len(resultat) - 1
             continue
 
         correspondance = RE_PUCE.match(ligne)
         if correspondance:
             vider_paragraphe()
             resultat.append(("puce", correspondance.group(1).strip()))
+            dernier_item = len(resultat) - 1
             continue
 
+        # Ligne indentee sous un element de liste : c'est sa suite.
+        if dernier_item is not None and not paragraphe and brute[:1].isspace():
+            prolonger_item(dernier_item, ligne.strip())
+            continue
+
+        dernier_item = None
         paragraphe.append(ligne.strip())
 
     vider_paragraphe()
@@ -210,7 +243,9 @@ def _rendre_figure(doc, legende, largeur, chemin, journal):
         journal.append(f"figure introuvable : {chemin}")
         mep.encadre(doc, "FIGURE MANQUANTE", f"{chemin} ({legende})")
         return
-    mep.figure(doc, fichier.name, legende,
+    # Meme raison que pour les tableaux : la legende alimente la table des
+    # figures, ou le balisage n'a pas de sens.
+    mep.figure(doc, fichier.name, _sans_balise(legende),
                largeur_cm=float(largeur) if largeur else LARGEUR_FIGURE_CM,
                dossier=fichier.parent)
 
@@ -218,8 +253,16 @@ def _rendre_figure(doc, legende, largeur, chemin, journal):
 def _rendre_tableau(doc, lignes, legende):
     if not lignes:
         return
-    entetes, corps = lignes[0], lignes[1:]
-    mep.tableau(doc, entetes, corps, legende=legende or None)
+    entetes = [_sans_balise(e) for e in lignes[0]]
+    corps = lignes[1:]
+    # decoupe= permet a une cellule de melanger du texte ordinaire et de la
+    # chasse fixe, par exemple "`classes.json`, jamais recopie en dur".
+    # La legende, elle, est reprise telle quelle dans la table des tableaux
+    # en tete de document, ou une mise en forme n'aurait pas de sens : son
+    # balisage est donc retire plutot qu'interprete.
+    mep.tableau(doc, entetes, corps,
+                legende=_sans_balise(legende) if legende else None,
+                decoupe=morceaux)
 
 
 def rendre(doc, blocs_analyses, journal):
@@ -259,10 +302,10 @@ def rendre(doc, blocs_analyses, journal):
         elif nature == "paragraphe":
             mep.riche(doc, morceaux(charge))
         elif nature == "puce":
-            mep.puce(doc, _sans_balise(charge))
+            mep.puce(doc, "", morceaux=morceaux(charge))
         elif nature == "numero":
             indice, texte = charge
-            mep.numero(doc, indice, _sans_balise(texte))
+            mep.numero(doc, indice, "", morceaux=morceaux(texte))
         elif nature == "citation":
             _rendre_citation(doc, charge)
         elif nature == "figure":

@@ -91,18 +91,100 @@ TOURNURES = [
     (r"revolutionn", "emphase publicitaire"),
 ]
 
+# -----------------------------------------------------------------------------
+#  Mots qui doivent porter leurs accents
+# -----------------------------------------------------------------------------
+# Cinq chapitres ont ete rediges sans un seul accent, et le defaut a traverse
+# une relecture complete du document genere sans etre vu : rien ne le signale,
+# le texte reste lisible. Ce controle le rend impossible a rater.
+#
+# La liste ne contient que des formes SANS homographe non accentue, pour
+# qu'aucune correction ne depende du contexte. Sont donc volontairement
+# absents : a/à, ou/où, des/dès, du/dû, sur/sûr, la/là, mais/maïs, ainsi que
+# les participes passes homographes d'un present (compte/compté, reste/resté).
+# Ceux-la se verifient a la lecture, pas a la machine.
+
+ACCENTS_OBLIGATOIRES = [
+    "problematique", "probleme", "problemes", "modele", "modeles", "donnee",
+    "donnees", "resultat", "resultats", "perimetre", "perimetres", "deja",
+    "etre", "meme", "memes", "tres", "apres", "premiere", "premieres",
+    "derniere", "dernieres", "troisieme", "deuxieme", "quatrieme",
+    "entrainement", "entrainer", "entraine", "entrainee", "entraines",
+    "entrainees", "reentrainer", "deploiement", "inference", "interpretabilite",
+    "evaluation", "evaluations", "evalue", "evaluee", "pretraitement",
+    "decoupage", "desequilibre", "deduplication", "integrite", "verite",
+    "etiquette", "etiquettes", "etiquete", "etiquetee", "etiquetees",
+    "reference", "references", "representation", "representations",
+    "caracteristiques", "categories", "parametres", "requete", "requetes",
+    "reponse", "reponses", "acces", "critere", "criteres", "element",
+    "elements", "etape", "etapes", "etat", "etats", "necessaire", "precis",
+    "precise", "precisement", "precoce", "precocite", "efficacite",
+    "specialise", "specialisee", "specialisees", "specifique", "systeme",
+    "systematique", "systematiquement", "telephone", "materiel", "numerique",
+    "generalement", "genere", "generee", "generation", "separation", "separe",
+    "separee", "separees", "separement", "frontiere", "memoire", "chaine",
+    "chaines", "controle", "controles", "developpe", "developpee",
+    "developper", "developpement", "considerables", "consequence",
+    "consequences", "conference", "difference", "differents", "differente",
+    "differentes", "eleve", "elevee", "reseau", "reseaux", "zero",
+    "detecter", "detecte", "detectes",
+    "detectee", "detectees", "repondre", "repond", "repondrait", "presente",
+    "detail", "details", "lumiere", "maniere", "matiere", "barriere",
+    "presentee", "presentees", "operation", "operations", "securite",
+    "qualite", "quantite", "validite", "fiabilite", "possibilite",
+    "possibilites", "priorite", "propriete", "proprietes", "unite", "unites",
+    "activite", "capacite", "densite", "humidite", "luminosite", "gravite",
+    "senegalaise", "senegalaises", "academique", "theorique", "numero",
+]
+
 
 def sans_accents(texte):
     return "".join(c for c in unicodedata.normalize("NFD", texte.lower())
                    if unicodedata.category(c) != "Mn")
 
 
+SANS_ACCENT = set(ACCENTS_OBLIGATOIRES)
+
+# Trois sortes de texte ne sont pas de la prose et n'ont pas a etre accentuees :
+# les commentaires, qui ne figurent pas dans le document final, le balisage de
+# chasse fixe, et les noms de fichiers, de routes et de variables. Sans ce
+# filtre, « src/model/evaluation_terrain.py » serait signale comme un accent
+# manquant sur « evaluation ».
+RE_COMMENTAIRE = re.compile(r"<!--.*?-->", re.DOTALL)
+RE_CODE = re.compile(r"`[^`]*`")
+RE_CHEMIN = re.compile(r"[A-Za-z0-9_.\-/]*[_./][A-Za-z0-9_.\-/]*")
+RE_MOT = re.compile(r"[A-Za-zÀ-ÿ]+")
+
+
+def _prose(texte):
+    """
+    Le texte destine a etre lu, commentaires et identifiants retires.
+
+    Les zones neutralisees sont remplacees par des espaces de meme longueur,
+    et non supprimees : la numerotation des lignes doit rester exacte pour
+    que les messages d'erreur pointent au bon endroit.
+    """
+    def blanchir(m):
+        return re.sub(r"[^\n]", " ", m.group(0))
+
+    for motif in (RE_COMMENTAIRE, RE_CODE, RE_CHEMIN):
+        texte = motif.sub(blanchir, texte)
+    return texte
+
+
 def controler(fichiers):
     infractions = []
 
     for chemin in fichiers:
-        for numero, ligne in enumerate(
-                chemin.read_text(encoding="utf-8").splitlines(), start=1):
+        source = chemin.read_text(encoding="utf-8")
+
+        for numero, ligne in enumerate(_prose(source).splitlines(), start=1):
+            for mot in RE_MOT.findall(ligne):
+                if mot.lower() in SANS_ACCENT:
+                    infractions.append(
+                        (chemin.name, numero, f"accent manquant : {mot}"))
+
+        for numero, ligne in enumerate(source.splitlines(), start=1):
 
             for caractere in ligne:
                 if caractere in AUTORISES:
