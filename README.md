@@ -1,7 +1,7 @@
 # AgriVision-AI
 
 Plateforme d'aide au diagnostic des maladies des cultures par vision par ordinateur.
-Projet ESMT Dakar — Cycle Ingénierie des Données et IA — 11 au 30 août 2026.
+Projet ESMT Dakar — Cycle Ingénierie des Données et IA — 30 juillet au 30 août 2026.
 
 - Cheick Oumar Doumbia — Binôme A (données & service)
 - Faustin Félicien Pikbougoum — Binôme B (modèle & application)

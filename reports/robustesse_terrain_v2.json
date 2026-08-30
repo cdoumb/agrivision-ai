@@ -12,7 +12,9 @@
   "terrain": {
     "exactitude": 0.4947,
     "f1_macro_9_classes": 0.4976,
-    "confiance_moyenne": 0.4705
+    "confiance_moyenne": 0.4705,
+    "confiance_si_juste": 0.5283,
+    "confiance_si_faux": 0.4139
   },
   "f1_par_classe": {
     "Tomate - Saine": {

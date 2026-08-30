@@ -23,7 +23,7 @@
     },
     {
       "index": 2,
-      "label": "Tomate - Tache bacterienne"
+      "label": "Tomate - Tache bactérienne"
     },
     {
       "index": 3,
@@ -31,19 +31,19 @@
     },
     {
       "index": 4,
-      "label": "Mais - Sain"
+      "label": "Maïs - Sain"
     },
     {
       "index": 5,
-      "label": "Mais - Rouille commune"
+      "label": "Maïs - Rouille commune"
     },
     {
       "index": 6,
-      "label": "Mais - Helminthosporiose"
+      "label": "Maïs - Helminthosporiose"
     },
     {
       "index": 7,
-      "label": "Mais - Cercosporiose"
+      "label": "Maïs - Cercosporiose"
     },
     {
       "index": 8,
@@ -51,7 +51,7 @@
     },
     {
       "index": 9,
-      "label": "Poivron - Tache bacterienne"
+      "label": "Poivron - Tache bactérienne"
     }
   ],
   "decoupage": {
@@ -67,14 +67,14 @@
     "f1_par_classe": {
       "Tomate - Saine": 0.9855,
       "Tomate - Mildiou tardif": 0.9648,
-      "Tomate - Tache bacterienne": 0.9715,
+      "Tomate - Tache bactérienne": 0.9715,
       "Tomate - Septoriose": 0.9567,
-      "Mais - Sain": 0.9971,
-      "Mais - Rouille commune": 0.9972,
-      "Mais - Helminthosporiose": 0.899,
-      "Mais - Cercosporiose": 0.825,
+      "Maïs - Sain": 0.9971,
+      "Maïs - Rouille commune": 0.9972,
+      "Maïs - Helminthosporiose": 0.899,
+      "Maïs - Cercosporiose": 0.825,
       "Poivron - Sain": 0.9887,
-      "Poivron - Tache bacterienne": 0.98
+      "Poivron - Tache bactérienne": 0.98
     }
   }
 }

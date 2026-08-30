@@ -370,6 +370,15 @@ def main():
             "exactitude": round(exactitude, 4),
             "f1_macro_9_classes": round(f1_macro, 4),
             "confiance_moyenne": round(float(confiances.mean()), 4),
+            # Ces deux chiffres etaient affiches a l'ecran sans etre verses au
+            # depot. Le rapport les cite pourtant : faute de les trouver ici,
+            # il allait les chercher dans la fiche du modele, qui porte la
+            # mesure du notebook et non celle du service. Deux chaines de
+            # mesure se retrouvaient ainsi dans un meme tableau.
+            "confiance_si_juste": round(
+                float(confiances[predictions == verites].mean()), 4),
+            "confiance_si_faux": round(
+                float(confiances[faux].mean()), 4) if faux.any() else None,
         },
         "f1_par_classe": {
             libelles[indice]: {
