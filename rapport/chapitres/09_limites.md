@@ -104,6 +104,16 @@ pas le diagnostic d'un conseiller agricole ou d'un service de protection des vé
 seuls habilités à préconiser un traitement. Aucune prescription phytosanitaire ne figure
 dans l'application, et c'est un choix de périmètre assumé.
 
+Une dernière limite d'usage tient à l'avertissement lui-même. Tout le bénéfice de la
+version 2, tel que le chapitre 7 le mesure, repose sur l'idée qu'un utilisateur averti
+d'un doute ira chercher un autre avis plutôt que d'appliquer quand même le diagnostic.
+Cette hypothèse n'a été vérifiée auprès d'aucun utilisateur réel. Le projet mesure ce
+que la plateforme affiche, pas ce qu'un agriculteur en fait. Un avertissement mal
+compris, ou compris mais ignoré faute d'autre recours accessible, ramènerait la
+version 2 au niveau de la version 1 du point de vue de la décision prise sur le terrain.
+Le vérifier demanderait un travail d'une autre nature que celui mené ici, avec des
+utilisateurs et non avec des corpus.
+
 ## Limite juridique
 
 PlantWild est distribué sous licence Creative Commons **CC BY-NC-ND 4.0** : usage non

@@ -18,8 +18,8 @@ vaut mieux qu'un modèle qui a un peu plus souvent raison.
 
 ## Ce qui a changé
 
-La version 2, `mobilenetv2-v2.0`, a été entraînée le 18 août 2026. Cinq modifications la
-séparent de la précédente.
+La version 2, `mobilenetv2-v2.0`, a été entraînée après les mesures du chapitre 6. Cinq
+modifications la séparent de la précédente.
 
 1. **Ajout d'images de terrain à l'entraînement.** Le corpus PlantWild apporte
    1 765 photographies prises en conditions réelles, aux côtés des 9 597 images de
@@ -72,6 +72,11 @@ n'était pas compensée ailleurs.
 
 Tableau: Les deux versions mesurées par la chaîne du notebook, qui les traite à l'identique.
 
+Le v1 apparaît ici à 36,27 pour cent, là où le chapitre 6 le donne à 35,67 : c'est la
+différence entre les deux chaînes de mesure, expliquée en fin de chapitre 6. La chaîne du
+notebook est retenue dans ce tableau parce qu'elle est la seule à avoir traité les deux
+versions, ce qui est la condition d'une comparaison honnête entre elles.
+
 L'exactitude au champ progresse de près de treize points et le F1 macro passe de 0,2671
 à 0,4520, soit un gain de près de 70 pour cent en valeur relative. Mais la ligne la plus
 importante de ce tableau n'est pas l'exactitude.
@@ -107,6 +112,21 @@ Ce qui compte pourtant est la dernière ligne. Le nombre de diagnostics faux ann
 sans le moindre signal passe de 403 à 61, soit une division par près de sept. Et quand
 l'application affirme quelque chose, elle a raison dans 72,3 pour cent des cas au lieu de
 40,0.
+
+La raison pour laquelle cette lecture est la bonne tient à ce que coûte chaque type
+d'erreur, et ces coûts ne sont pas symétriques. Un diagnostic accompagné d'un
+avertissement renvoie l'utilisateur vers un conseiller agricole, c'est-à-dire vers la
+solution qui existait avant la plateforme : le coût est une occasion manquée. Un
+diagnostic faux affiché avec assurance conduit au contraire à un traitement inadapté,
+appliqué sur la foi de l'outil, avec une dépense engagée et du temps perdu pendant que
+la maladie progresse. Le second cas laisse l'utilisateur dans une situation pire que
+s'il n'avait rien consulté. Une plateforme qui divise ce cas par sept, même au prix de
+se taire trois fois plus souvent, est donc préférable, et la comparaison des exactitudes
+brutes ne le montre pas.
+
+Ce raisonnement suppose que l'avertissement soit compris et suivi, ce qui n'a pas été
+vérifié auprès d'utilisateurs réels. Le chapitre 9 inscrit cette réserve parmi les
+limites du projet.
 
 > RETENIR: Un outil qui se tait quand il ne sait pas est plus utile qu'un outil qui parle toujours. La version 1 affirmait 403 diagnostics faux avec assurance ; la version 2 en affirme 61. C'est le résultat que le projet retient.
 
@@ -153,7 +173,7 @@ Une classe recule, la septoriose de la tomate, de 0,471 à 0,403. Le chapitre 8 
 élément d'explication troublant sur cette classe précise, à partir de l'examen des cartes
 d'interprétabilité.
 
-![Matrice de confusion du modèle v2 sur les 942 images de terrain.](reports/confusion_terrain_v2.png)
+![Matrice de confusion du modèle v2 sur les 942 images de terrain.|14.5](reports/confusion_terrain_v2.png)
 
 ## Les deux modèles sont conservés
 

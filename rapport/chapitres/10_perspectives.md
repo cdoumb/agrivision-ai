@@ -1,76 +1,95 @@
 # Perspectives
 
-## Ce qui repondrait a la limite principale
+## Ce qui répondrait à la limite principale
 
 La limite centrale du chapitre 9 est la performance au champ. Les pistes qui
-suivent sont classees par rapport attendu, la premiere etant de loin la plus
-determinante.
+suivent sont classées par rapport attendu, la première étant de loin la plus
+déterminante.
 
-Collecter des images de terrain locales est la seule piste qui s'attaque a la
-cause du probleme et non a ses symptomes. Cela suppose des photographies prises
-dans des exploitations senegalaises, sur les trois cultures du perimetre,
-etiquetees par un conseiller agricole plutot que reprises d'un corpus public.
-Nous ne disposons pas d'element permettant de justifier un volume precis a
-viser ; cette piste reste donc decrite qualitativement.
+Collecter des images de terrain locales est la seule piste qui s'attaque à la
+cause du problème et non à ses symptômes. Cela suppose des photographies prises
+dans des exploitations sénégalaises, sur les trois cultures du périmètre,
+étiquetées par un conseiller agricole plutôt que reprises d'un corpus public.
+Nous ne disposons pas d'élément permettant de justifier un volume précis à
+viser ; cette piste reste donc décrite qualitativement.
 
-Corriger les etiquettes du corpus de test est une seconde piste, plus rapide a
-mettre en oeuvre. Le chapitre 8 etablit qu'au moins une etiquette de PlantDoc
-est fausse. Une relecture systematique de ce corpus donnerait une mesure plus
-juste de ce que vaut reellement le modele au champ, sans qu'il soit necessaire
-de reentrainer quoi que ce soit.
+Corriger les étiquettes du corpus de test est une seconde piste, plus rapide à
+mettre en œuvre. Le chapitre 8 établit qu'au moins une étiquette de PlantDoc
+est fausse. Une relecture systématique de ce corpus donnerait une mesure plus
+juste de ce que vaut réellement le modèle au champ, sans qu'il soit nécessaire
+de réentraîner quoi que ce soit.
 
-Elargir le perimetre a d'autres cultures est une troisieme piste, a envisager
-une fois les deux precedentes engagees, en commencant par les cultures qui
+Élargir le périmètre à d'autres cultures est une troisième piste, à envisager
+une fois les deux précédentes engagées, en commençant par les cultures qui
 comptent localement et qui sont absentes des dix classes actuelles.
 
-## Le refus de repondre
+## Le refus de répondre
 
-La limite d'usage la plus genante, decrite au chapitre 9, est qu'une feuille
-inconnue du modele recoit tout de meme un diagnostic. Cela tient a la
-conception meme de la tete de classification, decrite au chapitre 4 : la
-couche de sortie en softmax repartit toujours cent pour cent de certitude
+La limite d'usage la plus gênante, décrite au chapitre 9, est qu'une feuille
+inconnue du modèle reçoit tout de même un diagnostic. Cela tient à la
+conception même de la tête de classification, décrite au chapitre 4 : la
+couche de sortie en softmax répartit toujours cent pour cent de certitude
 entre les dix classes connues, y compris devant une photographie de manioc ou
 une image sans rapport avec une feuille.
 
-Un mecanisme de rejet, capable de repondre qu'une image n'appartient a aucune
-classe connue plutot que de forcer un choix parmi les dix, repondrait
-directement a cette limite. Cela demande un travail specifique, et pas
-seulement un seuil de confiance plus eleve : un modele surconfiant reste
-surconfiant devant une image aberrante, un simple relevement du seuil ne
-suffit pas a corriger ce comportement.
+Un mécanisme de rejet, capable de répondre qu'une image n'appartient à aucune
+classe connue plutôt que de forcer un choix parmi les dix, répondrait
+directement à cette limite. Cela demande un travail spécifique, et pas
+seulement un seuil de confiance plus élevé : un modèle surconfiant reste
+surconfiant devant une image aberrante, un simple relèvement du seuil ne
+suffit pas à corriger ce comportement.
 
 ## TensorFlow Lite, option non retenue
 
-La conversion du modele vers TensorFlow Lite figurait parmi les options du
-sujet initial. Elle apporterait un diagnostic possible sans connexion reseau,
-directement sur le telephone, ce qui correspond exactement au contexte d'usage
-decrit au chapitre 1.
+La conversion du modèle vers TensorFlow Lite figurait parmi les options du
+sujet initial. Elle apporterait un diagnostic possible sans connexion réseau,
+directement sur le téléphone, ce qui correspond exactement au contexte d'usage
+décrit au chapitre 1.
 
-Cette conversion n'a pas ete engagee au cours des 30 jours du projet : la
-priorite est allee a la mesure de la robustesse au champ et a la construction
-de la version 2 du modele, qui ont revele un probleme plus fondamental qu'un
-probleme de deploiement. Il s'agit d'un choix assume, pas d'un oubli.
+Cette conversion n'a pas été engagée au cours des 30 jours du projet : la
+priorité est allée à la mesure de la robustesse au champ et à la construction
+de la version 2 du modèle, qui ont révélé un problème plus fondamental qu'un
+problème de déploiement. Il s'agit d'un choix assumé, pas d'un oubli.
 
-Cette voie reste ouverte pour la suite. Le choix de MobileNetV2, justifie au
-chapitre 4, a precisement ete fait en gardant cette possibilite praticable,
-contrairement a ce qu'aurait donne une architecture plus lourde comme ResNet50.
+Cette voie reste ouverte pour la suite. Le choix de MobileNetV2, justifié au
+chapitre 4, a précisément été fait en gardant cette possibilité praticable,
+contrairement à ce qu'aurait donné une architecture plus lourde comme ResNet50.
 
-## Couche meteorologique, option non retenue
+## Couche météorologique, option non retenue
 
-Le principe consisterait a croiser le diagnostic du modele avec les conditions
-locales, plusieurs des maladies du perimetre etant favorisees par l'humidite
+Le principe consisterait à croiser le diagnostic du modèle avec les conditions
+locales, plusieurs des maladies du périmètre étant favorisées par l'humidité
 et la chaleur.
 
-Cette piste a ete ecartee parce qu'elle suppose un modele deja fiable au
-champ. Ajouter une source de donnees supplementaire a un diagnostic qui n'est
-juste qu'une fois sur deux au champ n'ameliorerait pas la decision de
-l'utilisateur, elle la compliquerait sans en ameliorer la fiabilite. C'est une
-piste a envisager pour une suite du projet, une fois la limite principale
-traitee.
+Cette piste a été écartée parce qu'elle suppose un modèle déjà fiable au
+champ. Ajouter une source de données supplémentaire à un diagnostic qui n'est
+juste qu'une fois sur deux au champ n'améliorerait pas la décision de
+l'utilisateur, cela la compliquerait sans en améliorer la fiabilité. C'est une
+piste à envisager pour une suite du projet, une fois la limite principale
+traitée.
 
 ## Ce que le projet retient
 
-L'apport principal de ce projet n'est pas le modele en lui-meme, c'est la
-mesure qui en revele les limites. Une plateforme livree sur la seule foi des
+L'apport principal de ce projet n'est pas le modèle en lui-même, c'est la
+mesure qui en révèle les limites. Une plateforme livrée sur la seule foi des
 96,64 pour cent obtenus en studio aurait produit des diagnostics faux avec
 assurance, sans que personne ne dispose du moyen de s'en rendre compte.
+
+Ce résultat tient à une décision de méthode prise tôt, et qui aurait pu ne pas
+l'être : réserver un corpus que le modèle ne verrait jamais, dans des conditions
+de prise de vue différentes de celles de l'entraînement. Rien ne l'imposait. Le
+sujet demandait une évaluation sur des images non vues, ce qu'un simple jeu de
+test issu du même corpus aurait satisfait à la lettre. C'est ce choix, plus que
+tout réglage du modèle, qui a rendu le reste du rapport possible.
+
+Il faut en tirer la leçon dans le bon sens. Le projet ne conclut pas que la
+vision par ordinateur convient mal au diagnostic des maladies des cultures. Il
+conclut qu'un modèle entraîné sur des photographies de laboratoire apprend une
+part des conditions de laboratoire, et que cette part ne se voit que si on la
+cherche. La première piste de ce chapitre, collecter des images de terrain
+locales, répond directement à ce diagnostic. Les autres l'accompagnent sans
+s'y substituer.
+
+Une plateforme qui se tait quand elle doute est utile même imparfaite ; une
+plateforme qui affirme sans savoir ne l'est pas. C'est la seule chose que ce
+projet demande de retenir.

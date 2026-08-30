@@ -2,100 +2,119 @@
 
 ## Vue d'ensemble
 
-![Architecture de la plateforme, six couches et frontiere entre les deux perimetres.](docs/architecture.png)
+![Architecture de la plateforme, six couches et frontière entre les deux périmètres.](docs/architecture.png)
 
-La plateforme est organisee en six couches, qui correspondent chacune a une
-etape du cycle de vie d'une photographie de feuille, depuis sa capture jusqu'a
-l'affichage d'une recommandation. Trois de ces couches relevent du perimetre A :
-la constitution du corpus, le pretraitement, et le service d'inference qui
-heberge le modele. Les trois autres relevent du perimetre B : l'entrainement du
-modele, la generation des cartes d'interpretabilite, et l'application qui
+La plateforme est organisée en six couches, qui correspondent chacune à une
+étape du cycle de vie d'une photographie de feuille, depuis sa capture jusqu'à
+l'affichage d'une recommandation. Trois de ces couches relèvent du périmètre A :
+la constitution du corpus, le prétraitement, et le service d'inférence qui
+héberge le modèle. Les trois autres relèvent du périmètre B : l'entraînement du
+modèle, la génération des cartes d'interprétabilité, et l'application qui
 restitue le diagnostic.
 
-Le plus lisible pour presenter cette architecture est de suivre une
-photographie de bout en bout, plutot que de decrire chaque couche isolement.
-Un utilisateur prend une photographie avec son telephone et la soumet dans
+Le plus lisible pour présenter cette architecture est de suivre une
+photographie de bout en bout, plutôt que de décrire chaque couche isolément.
+Un utilisateur prend une photographie avec son téléphone et la soumet dans
 l'application. L'application transmet cette image, sans la modifier, au
-service d'inference. Le service verifie le format et la taille du fichier, le
-redimensionne a 224 sur 224 pixels, le normalise, puis le fait passer par le
-modele charge en memoire. Le modele produit dix scores, un par classe. Le
-service determine la classe de plus haut score, calcule la carte Grad-CAM
-correspondante, et renvoie l'ensemble sous forme d'une reponse structuree.
-L'application recoit cette reponse et l'affiche : diagnostic, niveau de
-confiance, carte visuelle, et recommandation associee.
+service d'inférence. Le service vérifie le format et la taille du fichier, le
+redimensionne à 224 sur 224 pixels, le normalise, puis le fait passer par le
+modèle chargé en mémoire. Le modèle produit dix scores, un par classe. Le
+service détermine la classe de plus haut score, calcule la carte Grad-CAM
+correspondante, et renvoie l'ensemble sous forme d'une réponse structurée.
+L'application reçoit cette réponse et l'affiche : diagnostic, niveau de
+confiance, carte visuelle, et recommandation associée.
 
-La frontiere entre le perimetre A et le perimetre B a ete placee a cet endroit
-precis, entre le service d'inference et l'application, parce que c'est la
-seule frontiere qui permet a chaque binome de travailler sur une brique
-testable independamment : le service peut etre valide en lui envoyant des
-images de test sans aucune interface, et l'application peut etre developpee
-contre une reponse simulee sans que le modele soit termine.
+La frontière entre le périmètre A et le périmètre B a été placée à cet endroit
+précis, entre le service d'inférence et l'application, parce que c'est la
+seule frontière qui permet à chaque binôme de travailler sur une brique
+testable indépendamment : le service peut être validé en lui envoyant des
+images de test sans aucune interface, et l'application peut être développée
+contre une réponse simulée sans que le modèle soit terminé.
 
-## La separation entre l'application et le service
+## La séparation entre l'application et le service
 
-L'application ne charge jamais le modele elle-meme ; elle se contente
-d'appeler le service par le reseau, sur les points d'acces decrits plus bas.
+L'application ne charge jamais le modèle elle-même ; elle se contente
+d'appeler le service par le réseau, sur les points d'accès décrits plus bas.
 
-Cette separation permet trois choses distinctes : changer de version du
-modele sans toucher a l'application, remplacer ou faire evoluer l'interface
-sans toucher au modele, et tester les deux composantes separement. Elle a un
-cout en retour : chaque diagnostic suppose desormais un appel reseau entre les
-deux conteneurs, avec une gestion des pannes a prevoir, et un etat a afficher
-dans l'application lorsque le service ne repond pas encore ou plus.
+Cette séparation permet trois choses distinctes : changer de version du
+modèle sans toucher à l'application, remplacer ou faire évoluer l'interface
+sans toucher au modèle, et tester les deux composantes séparément. Elle a un
+coût en retour : chaque diagnostic suppose désormais un appel réseau entre les
+deux conteneurs, avec une gestion des pannes à prévoir, et un état à afficher
+dans l'application lorsque le service ne répond pas encore ou plus.
 
 ## Le contrat d'interface
 
-Le contrat d'interface est le document qui a permis aux deux binomes de
-travailler en parallele sans se bloquer l'un l'autre. Il a ete gele le
-14 aout 2026 et n'a pas bouge depuis.
+Le contrat d'interface est le document qui a permis aux deux binômes de
+travailler en parallèle sans se bloquer l'un l'autre. Il a été gelé le
+14 août 2026 et n'a pas bougé depuis.
 
-| Element | Valeur retenue |
+| Élément | Valeur retenue |
 |---|---|
-| Formats d'image acceptes | JPEG ou PNG, trois canaux |
+| Formats d'image acceptés | JPEG ou PNG, trois canaux |
 | Taille maximale du fichier | 5 Mo |
-| Dimension attendue par le modele | 224 sur 224 pixels |
+| Dimension attendue par le modèle | 224 sur 224 pixels |
 | Qui redimensionne | Le service, jamais l'application |
-| Source de verite des classes | `classes.json`, jamais recopie en dur |
+| Source de vérité des classes | `classes.json`, jamais recopié en dur |
 
 Tableau: Principales clauses du contrat d'interface.
 
-| Methode | Route | Role |
+| Méthode | Route | Rôle |
 |---|---|---|
-| POST | `/predict` | Recoit l'image, renvoie le diagnostic complet |
-| GET | `/health` | Etat du service et version du modele charge |
-| GET | `/classes` | Liste ordonnee des dix classes |
+| POST | `/predict` | Reçoit l'image, renvoie le diagnostic complet |
+| GET | `/health` | État du service et version du modèle chargé |
+| GET | `/classes` | Liste ordonnée des dix classes |
 
-Tableau: Points d'acces du service d'inference.
+Tableau: Points d'accès du service d'inférence.
 
-La reponse de `/predict` contient la classe retenue et son indice, le niveau
-de confiance associe, les trois premieres hypotheses avec leur propre score,
-la carte Grad-CAM encodee, et la version du modele ayant produit la reponse.
+La réponse de `/predict` contient la classe retenue et son indice, le niveau
+de confiance associé, les trois premières hypothèses avec leur propre score,
+la carte Grad-CAM encodée, et la version du modèle ayant produit la réponse.
 
-La clause qui confie tout le redimensionnement au service, et jamais a
-l'application, garantit qu'une seule chaine de pretraitement existe pour une
-photographie donnee. Le chapitre 6 montre precisement ce qui arrive quand deux
-chaines de redimensionnement coexistent malgre tout, entre un notebook et le
-service : les deux methodes utilisees, `tf.image.resize` d'un cote et Pillow de
-l'autre, ne produisent pas exactement la meme image de 224 pixels, et cet ecart
-suffit a faire basculer certains diagnostics.
+La clause qui confie tout le redimensionnement au service, et jamais à
+l'application, garantit qu'une seule chaîne de prétraitement existe pour une
+photographie donnée. Le chapitre 6 montre précisément ce qui arrive quand deux
+chaînes de redimensionnement coexistent malgré tout, entre un notebook et le
+service : les deux méthodes utilisées, `tf.image.resize` d'un côté et Pillow de
+l'autre, ne produisent pas exactement la même image de 224 pixels, et cet écart
+suffit à faire basculer certains diagnostics.
 
-L'ordre des dix classes est, de la meme maniere, un point de contrat et non un
-detail d'implementation. Si le service et le modele ne s'accordaient pas sur
-cet ordre, un indice decale transformerait silencieusement chaque diagnostic
-en un autre, sans qu'aucune erreur ne se declenche : le systeme continuerait a
-repondre, mais avec des libelles faux.
+L'ordre des dix classes est, de la même manière, un point de contrat et non un
+détail d'implémentation. Si le service et le modèle ne s'accordaient pas sur
+cet ordre, un indice décalé transformerait silencieusement chaque diagnostic
+en un autre, sans qu'aucune erreur ne se déclenche : le système continuerait à
+répondre, mais avec des libellés faux.
 
-Le gel du contrat a permis concretement au binome B de developper l'application
-contre un service simule respectant le meme format de reponse, pendant que le
-binome A finalisait le service reel. Les deux composantes ont ainsi progresse
-en parallele plutot que l'une apres l'autre.
+Le gel du contrat a permis concrètement au binôme B de développer l'application
+contre un service simulé respectant le même format de réponse, pendant que le
+binôme A finalisait le service réel. Les deux composantes ont ainsi progressé
+en parallèle plutôt que l'une après l'autre.
 
-## Ce que le service annonce sur lui-meme
+Ce que ce gel a évité mérite d'être dit, car un contrat d'interface ne se
+justifie pas par principe mais par les incidents qu'il empêche. Sans lui, la
+liste des classes aurait vécu en trois endroits à la fois : dans le notebook
+d'entraînement, dans le service, et dans l'affichage de l'application. Toute
+correction apportée à l'un des trois aurait eu une chance de ne pas atteindre
+les deux autres, et l'erreur ne se serait pas manifestée par une panne mais par
+un diagnostic juste affiché sous un mauvais nom. Le même raisonnement vaut pour
+la taille d'image attendue : deux composantes qui redimensionnent chacune de
+leur côté produisent deux images différentes à partir de la même photographie,
+et le chapitre 6 chiffre exactement ce que cet écart coûte.
 
-La route `/health` renvoie la version du modele reellement charge en memoire,
-deduite du nom du fichier charge, et non une valeur ecrite en dur dans le code.
-Ce detail compte : un service qui annoncerait une version tout en en servant
-une autre rendrait toute mesure de performance ininterpretable, puisqu'on ne
-saurait plus quel modele est realise. Ce cas s'est presente en cours de projet
-et a ete corrige ; le chapitre 6 le raconte du point de vue de l'evaluation
+Le contrat a aussi une vertu que l'on mesure mal sur le moment. Il rend chaque
+désaccord explicite au lieu de le laisser se découvrir tard. Une question comme
+celle de savoir qui redimensionne l'image paraît secondaire tant qu'elle n'est
+pas posée ; elle devient coûteuse le jour où deux réponses coexistent dans le
+même système. L'avoir tranchée par écrit, avant d'écrire la moindre ligne des
+deux composantes, a fait de cette question un point réglé plutôt qu'un incident
+à instruire.
+
+## Ce que le service annonce sur lui-même
+
+La route `/health` renvoie la version du modèle réellement chargé en mémoire,
+déduite du nom du fichier chargé, et non une valeur écrite en dur dans le code.
+Ce détail compte : un service qui annoncerait une version tout en en servant
+une autre rendrait toute mesure de performance ininterprétable, puisqu'on ne
+saurait plus quel modèle est utilisé. Ce cas s'est présenté en cours de projet
+et a été corrigé ; le chapitre 6 le raconte du point de vue de l'évaluation
 qu'il a fallu reprendre.

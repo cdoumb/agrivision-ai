@@ -7,8 +7,8 @@
     01_entrainement_mobilenetv2.ipynb. Aucun chiffre n'est saisi de mémoire.
 -->
 
-La première version du modèle, `mobilenetv2-v1.0`, a été entraînée le 17 août 2026 sur
-le seul corpus PlantVillage. Ce chapitre rend compte de ce qu'elle vaut sur le jeu de
+La première version du modèle, `mobilenetv2-v1.0`, a été entraînée sur le seul corpus
+PlantVillage. Ce chapitre rend compte de ce qu'elle vaut sur le jeu de
 test issu de ce même corpus, c'est-à-dire dans les conditions exactes où elle a appris.
 Le chapitre 6 mesure ensuite ce qu'elle vaut ailleurs, et l'écart entre les deux est le
 résultat central du projet.
@@ -77,7 +77,7 @@ Huit classes sur dix dépassent 0,95 de F1. Deux seulement décrochent, et ce so
 deux mêmes maladies : l'helminthosporiose du maïs à 0,899 et la cercosporiose du maïs à
 0,825.
 
-![Matrice de confusion du modèle v1 sur le jeu de test PlantVillage.](reports/matrice_confusion.png)
+![Matrice de confusion du modèle v1 sur le jeu de test PlantVillage.|14.5](reports/matrice_confusion.png)
 
 ## Où le modèle se trompe, et pourquoi
 

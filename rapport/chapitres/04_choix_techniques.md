@@ -1,191 +1,212 @@
 # Choix techniques
 
-Le contrat d'interface fixe au chapitre 3 dit ce que chaque brique doit produire, sans
-dire comment. Ce chapitre justifie les moyens retenus, et signale a chaque fois ce qui a
-ete ecarte et pourquoi.
+Le contrat d'interface fixé au chapitre 3 dit ce que chaque brique doit produire, sans
+dire comment. Ce chapitre justifie les moyens retenus, et signale à chaque fois ce qui a
+été écarté et pourquoi.
 
-## Le modele : MobileNetV2 et transfert d'apprentissage
+## Le modèle : MobileNetV2 et transfert d'apprentissage
 
-### Pourquoi ne pas entrainer un reseau de zero
+### Pourquoi ne pas entraîner un réseau de zéro
 
-Un reseau de convolution entraine depuis une initialisation aleatoire demande un corpus
-de plusieurs centaines de milliers d'images pour apprendre seul les representations
-visuelles elementaires que sont les contours, les textures et les motifs. Notre corpus en
-compte 13 725. Entrainer de zero dans ces conditions produit un modele qui apprend par
-coeur son jeu d'entrainement.
+Un réseau de convolution entraîné depuis une initialisation aléatoire demande un corpus
+de plusieurs centaines de milliers d'images pour apprendre seul les représentations
+visuelles élémentaires que sont les contours, les textures et les motifs. Notre corpus en
+compte 13 725. Entraîner de zéro dans ces conditions produit un modèle qui apprend par
+cœur son jeu d'entraînement.
 
-Le transfert d'apprentissage resout ce probleme en partant d'un reseau deja entraine sur
-ImageNet, un corpus de plus d'un million d'images. Les couches basses de ce reseau savent
-deja detecter des contours et des textures, ce qui est exactement ce dont la
-reconnaissance d'une lesion foliaire a besoin. Seules les couches hautes, specialisees
-dans les mille categories d'ImageNet, doivent etre reapprises.
+Le transfert d'apprentissage résout ce problème en partant d'un réseau déjà entraîné sur
+ImageNet, un corpus de plus d'un million d'images. Les couches basses de ce réseau savent
+déjà détecter des contours et des textures, ce qui est exactement ce dont la
+reconnaissance d'une lésion foliaire a besoin. Seules les couches hautes, spécialisées
+dans les mille catégories d'ImageNet, doivent être réapprises.
 
 ### Pourquoi MobileNetV2
 
-Trois architectures pre-entrainees etaient candidates : ResNet50, EfficientNetB0 et
-MobileNetV2. Le choix s'est porte sur la troisieme pour des raisons de contexte
-d'utilisation plutot que de performance brute.
+Trois architectures pré-entraînées étaient candidates : ResNet50, EfficientNetB0 et
+MobileNetV2. Le choix s'est porté sur la troisième pour des raisons de contexte
+d'utilisation plutôt que de performance brute.
 
-| Critere | Ce qu'il implique ici |
+| Critère | Ce qu'il implique ici |
 |---|---|
-| Taille du modele | 26 Mo une fois entraine, contre une centaine pour ResNet50 |
-| Temps d'inference | Une fraction de seconde par image sur un processeur ordinaire, sans carte graphique |
-| Conception d'origine | Pense pour le mobile, donc pour des ressources contraintes |
-| Voie d'evolution | Convertible en TensorFlow Lite pour une execution sur telephone |
+| Taille du modèle | 26 Mo une fois entraîné, contre une centaine pour ResNet50 |
+| Temps d'inférence | Une fraction de seconde par image sur un processeur ordinaire, sans carte graphique |
+| Conception d'origine | Pensé pour le mobile, donc pour des ressources contraintes |
+| Voie d'évolution | Convertible en TensorFlow Lite pour une exécution sur téléphone |
 
-Tableau: Criteres ayant conduit au choix de MobileNetV2.
+Tableau: Critères ayant conduit au choix de MobileNetV2.
 
-Le dernier critere merite d'etre precise, car il n'a pas ete suivi d'effet. La conversion
-en TensorFlow Lite figurait parmi les options du projet, et elle a ete abandonnee faute
-de temps. Le choix de MobileNetV2 garde neanmoins cette voie ouverte, ce qui n'aurait pas
-ete le cas avec une architecture plus lourde. Le chapitre 10 y revient.
+Le dernier critère mérite d'être précisé, car il n'a pas été suivi d'effet. La conversion
+en TensorFlow Lite figurait parmi les options du projet, et elle a été abandonnée faute
+de temps. Le choix de MobileNetV2 garde néanmoins cette voie ouverte, ce qui n'aurait pas
+été le cas avec une architecture plus lourde. Le chapitre 10 y revient.
 
-Le contexte vise, une exploitation agricole senegalaise avec une connexion incertaine et
-un materiel modeste, rendait cette famille d'architectures plus pertinente qu'un reseau
-plus precis mais plus exigeant. L'ecart de performance entre ces architectures sur une
-tache a dix classes bien separees reste par ailleurs faible, et les 96,64 pour cent
+Le contexte visé, une exploitation agricole sénégalaise avec une connexion incertaine et
+un matériel modeste, rendait cette famille d'architectures plus pertinente qu'un réseau
+plus précis mais plus exigeant. L'écart de performance entre ces architectures sur une
+tâche à dix classes bien séparées reste par ailleurs faible, et les 96,64 pour cent
 obtenus au chapitre 5 le confirment.
 
-### La tete de classification
+Il faut ajouter que ce raisonnement, tel qu'il a été tenu au moment du choix, portait
+sur le mauvais problème. Il compare des architectures sur le critère de leur exactitude
+en studio, alors que le chapitre 6 établit que le facteur limitant n'est pas
+l'architecture mais la nature du corpus d'entraînement. Un ResNet50 entraîné sur les
+mêmes images de studio se serait effondré au champ de la même manière, et probablement
+dans les mêmes proportions. Le choix de MobileNetV2 reste justifié par le contexte de
+déploiement, qui est un argument solide ; il ne l'est pas par un gain de performance,
+qui n'existe pas ici. La distinction compte, parce qu'elle indique où il aurait fallu
+investir l'effort : dans les données plutôt que dans le modèle.
 
-Le corps de MobileNetV2 est conserve tel quel. Seule la tete, c'est-a-dire les dernieres
-couches qui produisent la decision, a ete remplacee.
+### La tête de classification
 
-| Couche | Role |
+Le corps de MobileNetV2 est conservé tel quel. Seule la tête, c'est-à-dire les dernières
+couches qui produisent la décision, a été remplacée.
+
+| Couche | Rôle |
 |---|---|
-| `GlobalAveragePooling2D` | Resume chaque carte de caracteristiques en un seul nombre |
-| `Dropout(0.3)` | Eteint 30 pour cent des neurones au hasard, contre le surapprentissage |
+| `GlobalAveragePooling2D` | Résume chaque carte de caractéristiques en un seul nombre |
+| `Dropout(0.3)` | Éteint 30 pour cent des neurones au hasard, contre le surapprentissage |
 | `Dense(10, softmax)` | Produit les dix scores de sortie, dont la somme vaut 1 |
 
-Tableau: Tete de classification ajoutee au corps pre-entraine, version 1.
+Tableau: Tête de classification ajoutée au corps pré-entraîné, version 1.
 
-La sortie en `softmax` a une consequence directe sur l'usage, signalee au chapitre 9 :
-les dix scores somment toujours a 1, y compris devant une image qui n'appartient a aucune
-des dix classes. Le modele ne dispose d'aucun moyen de repondre qu'il ne sait pas.
+La sortie en `softmax` a une conséquence directe sur l'usage, signalée au chapitre 9 :
+les dix scores somment toujours à 1, y compris devant une image qui n'appartient à aucune
+des dix classes. Le modèle ne dispose d'aucun moyen de répondre qu'il ne sait pas.
 
-### L'entrainement en deux phases
+### L'entraînement en deux phases
 
-L'entrainement se deroule en deux temps, avec des taux d'apprentissage tres differents.
+L'entraînement se déroule en deux temps, avec des taux d'apprentissage très différents.
 
-1. **Transfert.** Le corps du reseau est entierement gele, seule la tete apprend, avec un
-   taux d'apprentissage de 1 pour 1 000 sur dix epoques au maximum. Un corps non gele
-   des le depart verrait ses poids detruits par les gradients desordonnes d'une tete
-   encore aleatoire.
-2. **Affinage.** Les quarante dernieres couches sont degelees et reapprises avec un taux
-   d'apprentissage cent fois plus faible, 1 pour 100 000, sur quinze epoques au maximum.
-   L'objectif est de specialiser les representations de haut niveau sur les feuilles,
-   sans effacer ce que le reseau sait deja.
+1. **Transfert.** Le corps du réseau est entièrement gelé, seule la tête apprend, avec un
+   taux d'apprentissage de 1 pour 1 000 sur dix époques au maximum. Un corps non gelé
+   dès le départ verrait ses poids détruits par les gradients désordonnés d'une tête
+   encore aléatoire.
+2. **Affinage.** Les quarante dernières couches sont dégelées et réapprises avec un taux
+   d'apprentissage cent fois plus faible, 1 pour 100 000, sur quinze époques au maximum.
+   L'objectif est de spécialiser les représentations de haut niveau sur les feuilles,
+   sans effacer ce que le réseau sait déjà.
 
-Les couches de normalisation par lot restent gelees dans les deux phases, y compris parmi
-les couches degelees. Elles portent des statistiques calculees sur ImageNet, sur plus
-d'un million d'images ; les reestimer sur des lots de 32 images produirait des
-statistiques bien plus bruitees.
+Les couches de normalisation par lot restent gelées dans les deux phases, y compris parmi
+les couches dégelées. Elles portent des statistiques calculées sur ImageNet, sur plus
+d'un million d'images ; les réestimer sur des lots de 32 images produirait des
+statistiques bien plus bruitées.
 
-Deux mecanismes automatiques encadrent l'entrainement : l'arret anticipe, qui interrompt
-l'apprentissage lorsque l'exactitude de validation cesse de progresser, et la reduction
-du taux d'apprentissage sur plateau. Ils evitent l'un et l'autre de choisir un nombre
-d'epoques au juge.
+Deux mécanismes automatiques encadrent l'entraînement : l'arrêt anticipé, qui interrompt
+l'apprentissage lorsque l'exactitude de validation cesse de progresser, et la réduction
+du taux d'apprentissage sur plateau. Ils évitent l'un et l'autre de choisir un nombre
+d'époques au jugé.
 
-### Le desequilibre des classes
+L'écart de facteur cent entre les deux taux d'apprentissage n'est pas un réglage
+arbitraire, et c'est le point le moins intuitif de ce dispositif. Pendant la première
+phase, la tête part de poids aléatoires : ses gradients sont grands et mal orientés, et
+il faut qu'elle apprenne vite. Pendant la seconde, les couches dégelées portent des
+représentations déjà correctes, acquises sur plus d'un million d'images ; le but n'est
+plus de les apprendre mais de les déplacer légèrement vers le domaine des feuilles. Un
+taux resté au niveau de la première phase effacerait en quelques lots ce qu'ImageNet a
+mis des semaines à construire. C'est la raison pour laquelle l'ordre des deux phases
+n'est pas interchangeable, et pourquoi dégeler le corps dès le départ, ce qui paraît
+plus direct, produit en pratique un modèle nettement moins bon.
 
-Le corpus presente un rapport de 4,15 entre sa classe la plus fournie et la moins
-fournie. Sans correction, le modele a interet a privilegier les classes nombreuses. Une
-ponderation inversement proportionnelle a l'effectif de chaque classe est donc appliquee
-a la fonction de perte : une erreur sur une classe rare coute plus cher qu'une erreur sur
-une classe frequente.
+### Le déséquilibre des classes
 
-### L'augmentation de donnees
+Le corpus présente un rapport de 4,15 entre sa classe la plus fournie et la moins
+fournie. Sans correction, le modèle a intérêt à privilégier les classes nombreuses. Une
+pondération inversement proportionnelle à l'effectif de chaque classe est donc appliquée
+à la fonction de perte : une erreur sur une classe rare coûte plus cher qu'une erreur sur
+une classe fréquente.
 
-Les images d'entrainement subissent des retournements horizontaux et verticaux, des
-rotations, des zooms et des variations de luminosite et de contraste, tires au hasard a
-chaque epoque. Le modele ne voit donc jamais deux fois exactement la meme image.
+### L'augmentation de données
 
-Cette augmentation est deliberement placee **a l'interieur du modele**, et non dans la
-chaine de chargement des donnees. Elle se desactive ainsi automatiquement en inference,
-sans qu'aucun code n'ait a y penser. Une augmentation restee active au moment du
-diagnostic ferait varier le resultat d'un appel a l'autre sur la meme photographie.
+Les images d'entraînement subissent des retournements horizontaux et verticaux, des
+rotations, des zooms et des variations de luminosité et de contraste, tirés au hasard à
+chaque époque. Le modèle ne voit donc jamais deux fois exactement la même image.
 
-La version 2 etend nettement ce dispositif, avec des variations de teinte et de
-saturation, des occlusions et du flou. Le chapitre 7 detaille ces ajouts et ce qu'ils ont
-apporte.
+Cette augmentation est délibérément placée **à l'intérieur du modèle**, et non dans la
+chaîne de chargement des données. Elle se désactive ainsi automatiquement en inférence,
+sans qu'aucun code n'ait à y penser. Une augmentation restée active au moment du
+diagnostic ferait varier le résultat d'un appel à l'autre sur la même photographie.
 
-### Grad-CAM plutot que les alternatives
+La version 2 étend nettement ce dispositif, avec des variations de teinte et de
+saturation, des occlusions et du flou. Le chapitre 7 détaille ces ajouts et ce qu'ils ont
+apporté.
 
-L'exigence d'interpretabilite pouvait etre satisfaite par plusieurs methodes. Grad-CAM a
-ete retenue parce qu'elle ne demande aucune modification du modele, qu'elle s'execute en
-une seule passe de gradients, donc assez vite pour etre calculee a chaque diagnostic, et
-que son resultat, une carte de chaleur superposee a la photographie, se lit sans
-formation particuliere. Les methodes a base de perturbations comme LIME auraient exige
-des centaines de passes par image, ce qui aurait fait passer le temps de reponse d'une
-fraction de seconde a plusieurs dizaines de secondes, pour un diagnostic cense etre
-immediat.
+### Grad-CAM plutôt que les alternatives
 
-## Le service et le deploiement
+L'exigence d'interprétabilité pouvait être satisfaite par plusieurs méthodes. Grad-CAM a
+été retenue parce qu'elle ne demande aucune modification du modèle, qu'elle s'exécute en
+une seule passe de gradients, donc assez vite pour être calculée à chaque diagnostic, et
+que son résultat, une carte de chaleur superposée à la photographie, se lit sans
+formation particulière. Les méthodes à base de perturbations comme LIME auraient exigé
+des centaines de passes par image, ce qui aurait fait passer le temps de réponse d'une
+fraction de seconde à plusieurs dizaines de secondes, pour un diagnostic censé être
+immédiat.
+
+## Le service et le déploiement
 
 ### Pourquoi FastAPI
 
-FastAPI a ete retenu plutot que Flask ou Django pour trois raisons directement liees au
-role du service dans ce projet, celui d'exposer un modele de classification derriere une
+FastAPI a été retenu plutôt que Flask ou Django pour trois raisons directement liées au
+rôle du service dans ce projet, celui d'exposer un modèle de classification derrière une
 API simple.
 
-FastAPI valide automatiquement les entrees d'une requete a partir de leur declaration de
-type, et rejette une requete mal formee avant meme qu'elle n'atteigne le code de
-prediction. Flask ne fait rien de tel par defaut, cette validation devrait etre ecrite a
-la main. FastAPI genere aussi automatiquement une documentation interactive de l'API,
-accessible sur `/docs`, qui liste les points d'acces, leurs parametres et le format
-attendu des reponses ; cette documentation reste synchronisee avec le code puisqu'elle
-est generee depuis lui, ce qui evite le risque, frequent avec Django ou Flask, d'une
-documentation ecrite a part et qui derive au fil des modifications.
+FastAPI valide automatiquement les entrées d'une requête à partir de leur déclaration de
+type, et rejette une requête mal formée avant même qu'elle n'atteigne le code de
+prédiction. Flask ne fait rien de tel par défaut, cette validation devrait être écrite à
+la main. FastAPI génère aussi automatiquement une documentation interactive de l'API,
+accessible sur `/docs`, qui liste les points d'accès, leurs paramètres et le format
+attendu des réponses ; cette documentation reste synchronisée avec le code puisqu'elle
+est générée depuis lui, ce qui évite le risque, fréquent avec Django ou Flask, d'une
+documentation écrite à part et qui dérive au fil des modifications.
 
-Le modele est charge une seule fois, au demarrage du service, et non a chaque appel de
-`/predict`. Charger un modele de plusieurs dizaines de megaoctets a chaque requete
-ajouterait plusieurs secondes a chaque diagnostic, la ou l'objectif est une reponse quasi
-immediate.
+Le modèle est chargé une seule fois, au démarrage du service, et non à chaque appel de
+`/predict`. Charger un modèle de plusieurs dizaines de mégaoctets à chaque requête
+ajouterait plusieurs secondes à chaque diagnostic, là où l'objectif est une réponse quasi
+immédiate.
 
 ### Pourquoi Streamlit pour l'application
 
 Streamlit permet de construire une interface web fonctionnelle en quelques dizaines de
-lignes de Python, sans ecrire de HTML, de CSS ou de JavaScript. Pour une application dont
-le role se limite a soumettre une photographie et a afficher un diagnostic, cette
-rapidite de developpement a compte davantage que la finesse de personnalisation qu'une
-interface ecrite a la main aurait permise.
+lignes de Python, sans écrire de HTML, de CSS ou de JavaScript. Pour une application dont
+le rôle se limite à soumettre une photographie et à afficher un diagnostic, cette
+rapidité de développement a compté davantage que la finesse de personnalisation qu'une
+interface écrite à la main aurait permise.
 
-Ce choix a une contrepartie : l'apparence de l'application reste largement celle imposee
-par Streamlit, avec des possibilites de personnalisation visuelle limitees compare a une
+Ce choix a une contrepartie : l'apparence de l'application reste largement celle imposée
+par Streamlit, avec des possibilités de personnalisation visuelle limitées comparé à une
 interface construite composant par composant en HTML et JavaScript.
 
-Quel que soit le choix retenu pour l'interface, la separation entre l'application et le
-service, decrite au chapitre 3, n'est pas negociable : l'application, quelle que soit sa
+Quel que soit le choix retenu pour l'interface, la séparation entre l'application et le
+service, décrite au chapitre 3, n'est pas négociable : l'application, quelle que soit sa
 technologie, ne fait jamais que consommer l'API du service.
 
 ### La conteneurisation
 
-L'application et le service tournent dans deux conteneurs Docker separes, plutot que
-dans un seul. Cette separation n'est pas seulement une question d'organisation :
-Streamlit et TensorFlow exigent chacun une version differente et incompatible de la
-bibliotheque `protobuf`. Les deux ne peuvent pas cohabiter dans un meme environnement
-Python. Deux conteneurs distincts resolvent ce conflit sans qu'il faille chercher un
-compromis de version qui, de toute facon, n'existe pas.
+L'application et le service tournent dans deux conteneurs Docker séparés, plutôt que
+dans un seul. Cette séparation n'est pas seulement une question d'organisation :
+Streamlit et TensorFlow exigent chacun une version différente et incompatible de la
+bibliothèque `protobuf`. Les deux ne peuvent pas cohabiter dans un même environnement
+Python. Deux conteneurs distincts résolvent ce conflit sans qu'il faille chercher un
+compromis de version qui, de toute façon, n'existe pas.
 
-Une variable d'environnement, `AGRIVISION_MODELE`, designe dans `docker-compose.yml` le
-modele effectivement charge par le service, `v2` par defaut. Rejouer la comparaison
-entre les deux versions du modele, presentee au chapitre 7, revient a remplacer cette
-valeur par `v1` et a relancer les conteneurs, sans modifier une ligne de code.
+Une variable d'environnement, `AGRIVISION_MODELE`, désigne dans `docker-compose.yml` le
+modèle effectivement chargé par le service, `v2` par défaut. Rejouer la comparaison
+entre les deux versions du modèle, présentée au chapitre 7, revient à remplacer cette
+valeur par `v1` et à relancer les conteneurs, sans modifier une ligne de code.
 
-Au premier demarrage, l'application attend automatiquement que le service ait termine de
-charger le modele avant de lui adresser des requetes. Sans cette reprise de contact
-automatique, un utilisateur qui lancerait l'application juste apres les conteneurs
-risquerait une premiere erreur, le temps que TensorFlow finisse de s'installer et que le
-modele soit charge en memoire, ce qui prend plusieurs minutes au tout premier demarrage.
+Au premier démarrage, l'application attend automatiquement que le service ait terminé de
+charger le modèle avant de lui adresser des requêtes. Sans cette reprise de contact
+automatique, un utilisateur qui lancerait l'application juste après les conteneurs
+risquerait une première erreur, le temps que TensorFlow finisse de s'installer et que le
+modèle soit chargé en mémoire, ce qui prend plusieurs minutes au tout premier démarrage.
 
 ### Les tests
 
-La suite de tests compte 30 tests au total : 8 portent sur la validation des entrees du
-service, comme le format ou la taille d'une image recue, et 22 portent sur le module
-d'inference lui-meme.
+La suite de tests compte 30 tests au total : 8 portent sur la validation des entrées du
+service, comme le format ou la taille d'une image reçue, et 22 portent sur le module
+d'inférence lui-même.
 
-Les tests qui necessitent le fichier du modele entraine s'ignorent automatiquement
-lorsque ce fichier est absent, plutot que d'echouer. Le modele n'etant pas verse dans le
-depot Git en raison de sa taille, cette regle permet a la suite de tests de rester
-executable sur une machine qui n'a pas encore telecharge le modele, en particulier en
-integration continue.
+Les tests qui nécessitent le fichier du modèle entraîné s'ignorent automatiquement
+lorsque ce fichier est absent, plutôt que d'échouer. Le modèle n'étant pas versé dans le
+dépôt Git en raison de sa taille, cette règle permet à la suite de tests de rester
+exécutable sur une machine qui n'a pas encore téléchargé le modèle, en particulier en
+intégration continue.

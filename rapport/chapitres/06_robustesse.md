@@ -32,7 +32,8 @@ Trois propriétés de ce protocole en font une mesure honnête.
 2. **La mesure passe par le service d'inférence lui-même**, `src/model/inference.py`,
    et non par un code d'évaluation séparé. Le chiffre obtenu est donc celui qu'obtient
    réellement un utilisateur qui envoie une photo, prétraitement compris.
-3. **Le résultat de studio auquel il est comparé est lu dans la fiche du modèle chargé**, et non écrit en dur dans le script. Comparer par erreur le terrain d'une
+3. **Le résultat de studio auquel il est comparé est lu dans la fiche du modèle
+   chargé**, et non écrit en dur dans le script. Comparer par erreur le terrain d'une
    version au studio d'une autre était un piège réel, et il a été refermé
    volontairement.
 
@@ -89,6 +90,24 @@ une feuille saine ressemble à du feuillage, avec des reflets, des ombres porté
 poussière et des morsures d'insectes qui ne sont pas des maladies. Le modèle n'a jamais
 appris à quoi ressemble une plante en bonne santé dans son milieu.
 
+Ce constat mène à une lecture plus dérangeante de l'excellent résultat du chapitre 5. Si
+le modèle reconnaissait la maladie, ses performances baisseraient au champ à mesure que
+la photographie devient difficile, mais elles baisseraient à peu près uniformément. Or
+l'effondrement est très inégal : certaines classes conservent près de la moitié de leur
+F1 quand d'autres tombent à zéro. Cette inégalité indique que le modèle ne s'appuyait
+pas sur les mêmes indices selon les classes. Pour les maladies produisant des lésions
+franches et contrastées, il avait bien appris quelque chose de la lésion, et il en
+retrouve une partie au champ. Pour les feuilles saines, il n'avait appris qu'un décor,
+et le décor a disparu.
+
+Autrement dit, les 96,64 pour cent du chapitre 5 ne mesuraient pas une seule chose. Ils
+agrégeaient des classes réellement apprises et des classes reconnues par leur contexte
+de prise de vue, sans qu'aucun chiffre de ce chapitre ne permette de séparer les deux.
+C'est le corpus de terrain qui rend cette séparation visible, et c'est la raison pour
+laquelle il ne pouvait pas être remplacé par des images de studio dégradées
+artificiellement : une image de studio floutée conserve son fond uni, donc conserve
+exactement l'indice que le modèle avait appris à tort.
+
 ## Le point le plus grave : la confiance
 
 L'effondrement de l'exactitude n'est pas, en soi, le résultat le plus préoccupant. Un
@@ -108,7 +127,7 @@ classe retenue. Rien dans cet entraînement ne lui apprend à réserver son juge
 une image qui ne ressemble à rien de ce qu'il connaît. La version 2 corrige précisément
 ce point, et c'est l'objet du chapitre suivant.
 
-![Matrice de confusion du modèle v1 sur les 942 images de terrain.](reports/robustesse_confusion_v1.png)
+![Matrice de confusion du modèle v1 sur les 942 images de terrain.|14.5](reports/robustesse_confusion_v1.png)
 
 ## Une précision sur les chiffres, et pourquoi elle compte
 
