@@ -18,16 +18,6 @@ d'Afrique de l'Ouest, limité. Nous ne disposons pas de chiffre vérifiable pour
 ces deux points dans les sources du dépôt ; nous les mentionnons donc comme
 éléments de contexte qualitatifs, pas comme données mesurées.
 
-Ce refus d'avancer un chiffre demande à être justifié, car il serait facile d'en
-citer un. Une maladie foliaire évolue sur quelques jours, et la fenêtre pendant
-laquelle un traitement reste utile se referme vite. Un diagnostic qui arrive
-après cette fenêtre ne coûte pas seulement la parcelle atteinte : il laisse le
-temps à la maladie de gagner les rangs voisins, si bien que le retard se paie
-deux fois. C'est ce mécanisme, et non un pourcentage de pertes, qui motive le
-projet. Un chiffre de pertes cité sans source vérifiable donnerait au rapport
-une apparence de rigueur qu'il n'aurait pas, et le chapitre 6 montre assez ce
-que coûte une mesure prise pour argent comptant.
-
 ## Pourquoi la vision par ordinateur
 
 Le téléphone équipé d'un appareil photo est déjà présent dans une grande partie
@@ -42,18 +32,6 @@ ne prétend pas savoir, mesurer la gravité d'une infection, prescrire un
 traitement, ou remplacer le jugement d'un conseiller agricole. Cette limite est
 posée dès ce premier chapitre parce qu'elle encadre tout le reste du projet ; le
 chapitre 9 y revient en détail, à la lumière des mesures effectuées.
-
-Le choix du support n'est pas neutre non plus. Un diagnostic qui suppose
-d'envoyer un échantillon à un laboratoire suppose aussi un transport, un délai
-et un coût, c'est-à-dire exactement les trois obstacles que le projet cherche à
-lever. Une photographie prise sur place et analysée en quelques secondes
-supprime les trois d'un coup, à condition que le traitement reste accessible
-depuis un appareil ordinaire. Cette contrainte a orienté des décisions
-techniques concrètes, décrites au chapitre 4 : le modèle retenu tient en
-26 mégaoctets et répond en une fraction de seconde sur un processeur sans carte
-graphique, là où une architecture plus précise aurait exigé un serveur dédié.
-La performance brute n'a donc pas été le seul critère, et le chapitre 4 assume
-ce compromis plutôt que de le taire.
 
 ## Ce que le projet a construit
 

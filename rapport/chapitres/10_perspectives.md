@@ -74,22 +74,3 @@ L'apport principal de ce projet n'est pas le modèle en lui-même, c'est la
 mesure qui en révèle les limites. Une plateforme livrée sur la seule foi des
 96,64 pour cent obtenus en studio aurait produit des diagnostics faux avec
 assurance, sans que personne ne dispose du moyen de s'en rendre compte.
-
-Ce résultat tient à une décision de méthode prise tôt, et qui aurait pu ne pas
-l'être : réserver un corpus que le modèle ne verrait jamais, dans des conditions
-de prise de vue différentes de celles de l'entraînement. Rien ne l'imposait. Le
-sujet demandait une évaluation sur des images non vues, ce qu'un simple jeu de
-test issu du même corpus aurait satisfait à la lettre. C'est ce choix, plus que
-tout réglage du modèle, qui a rendu le reste du rapport possible.
-
-Il faut en tirer la leçon dans le bon sens. Le projet ne conclut pas que la
-vision par ordinateur convient mal au diagnostic des maladies des cultures. Il
-conclut qu'un modèle entraîné sur des photographies de laboratoire apprend une
-part des conditions de laboratoire, et que cette part ne se voit que si on la
-cherche. La première piste de ce chapitre, collecter des images de terrain
-locales, répond directement à ce diagnostic. Les autres l'accompagnent sans
-s'y substituer.
-
-Une plateforme qui se tait quand elle doute est utile même imparfaite ; une
-plateforme qui affirme sans savoir ne l'est pas. C'est la seule chose que ce
-projet demande de retenir.

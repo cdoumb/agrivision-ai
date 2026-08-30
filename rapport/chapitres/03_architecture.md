@@ -90,25 +90,6 @@ contre un service simulé respectant le même format de réponse, pendant que le
 binôme A finalisait le service réel. Les deux composantes ont ainsi progressé
 en parallèle plutôt que l'une après l'autre.
 
-Ce que ce gel a évité mérite d'être dit, car un contrat d'interface ne se
-justifie pas par principe mais par les incidents qu'il empêche. Sans lui, la
-liste des classes aurait vécu en trois endroits à la fois : dans le notebook
-d'entraînement, dans le service, et dans l'affichage de l'application. Toute
-correction apportée à l'un des trois aurait eu une chance de ne pas atteindre
-les deux autres, et l'erreur ne se serait pas manifestée par une panne mais par
-un diagnostic juste affiché sous un mauvais nom. Le même raisonnement vaut pour
-la taille d'image attendue : deux composantes qui redimensionnent chacune de
-leur côté produisent deux images différentes à partir de la même photographie,
-et le chapitre 6 chiffre exactement ce que cet écart coûte.
-
-Le contrat a aussi une vertu que l'on mesure mal sur le moment. Il rend chaque
-désaccord explicite au lieu de le laisser se découvrir tard. Une question comme
-celle de savoir qui redimensionne l'image paraît secondaire tant qu'elle n'est
-pas posée ; elle devient coûteuse le jour où deux réponses coexistent dans le
-même système. L'avoir tranchée par écrit, avant d'écrire la moindre ligne des
-deux composantes, a fait de cette question un point réglé plutôt qu'un incident
-à instruire.
-
 ## Ce que le service annonce sur lui-même
 
 La route `/health` renvoie la version du modèle réellement chargé en mémoire,
